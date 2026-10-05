@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gutemberg Lounge - Painel TV Multizona & Controle Remoto</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#F3C759',
+                            500: '#E5A823',
+                            600: '#C28913',
+                            700: '#99680A'
+                        },
+                        dark: {
+                            950: '#070708',
+                            900: '#0B0B0C',
+                            800: '#141416',
+                            700: '#1F1F23',
+                            600: '#2A2A30'
+                        }
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Montserrat', sans-serif; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .bg-gold-gradient {
+            background: linear-gradient(135deg, #F3C759 0%, #E5A823 50%, #99680A 100%);
+        }
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #F3C759 0%, #E5A823 50%, #C28913 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 22s linear infinite;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #141416; }
+        ::-webkit-scrollbar-thumb { background: #2A2A30; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #E5A823; }
+    </style>
+</head>
+<body class="bg-dark-950 text-gray-200 min-h-screen flex flex-col antialiased">
+
+    <header class="bg-dark-800 border-b border-gold-500/30 px-4 sm:px-6 py-3 flex flex-wrap justify-between items-center sticky top-0 z-40 shadow-xl gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center text-dark-900 font-bold text-xl font-cinzel shadow-lg shadow-gold-500/20">
+                G
+            </div>
+            <div>
+                <h1 class="text-base sm:text-xl font-bold font-cinzel text-gold-gradient tracking-wider">GUTEMBERG LOUNGE</h1>
+                <p class="text-[10px] sm:text-xs text-gray-400">Painel Multizona Digital Menu & Remote Sync</p>
+            </div>
+        </div>
+
+        <!-- Sync Control Status -->
+        <div class="flex items-center gap-2 flex-wrap">
+            <div id="remote-status-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-dark-700 text-gold-400 border border-gold-500/30 flex items-center gap-1.5">
+                <span id="remote-status-dot" class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span id="remote-status-text">Sincronizando Local</span>
+            </div>
+
+            <button onclick="openSyncModal()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-gold-500/10 hover:bg-gold-500/20 text-gold-400 border border-gold-500/40 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-mobile-screen-button"></i> Controle via Celular
+            </button>
+
+            <button onclick="saveAllData()" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-gold-500 hover:bg-gold-400 text-dark-900 transition shadow-lg shadow-gold-500/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-floppy-disk"></i> Salvar
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-4 lg:p-6 max-w-[1920px] mx-auto w-full">
+
+        <!-- LEFT PANEL: CONTROLS & MANAGEMENT (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-4">
+
+            <!-- TAB CONTROLS NAVIGATION -->
+            <div class="bg-dark-800 p-1.5 rounded-xl border border-gold-500/20 flex flex-wrap gap-1 shadow-md">
+                <button onclick="switchTab('identidade')" id="tab-btn-identidade" class="tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 bg-gold-500 text-dark-900">
+                    <i class="fa-solid fa-palette"></i> Identidade
+                </button>
+                <button onclick="switchTab('cardapio')" id="tab-btn-cardapio" class="tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-100">
+                    <i class="fa-solid fa-utensils"></i> Cardápio
+                </button>
+                <button onclick="switchTab('plus')" id="tab-btn-plus" class="tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-100">
+                    <i class="fa-solid fa-star"></i> Plus +
+                </button>
+                <button onclick="switchTab('parceiros')" id="tab-btn-parceiros" class="tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-100">
+                    <i class="fa-solid fa-handshake"></i> Parceiros
+                </button>
+                <button onclick="switchTab('rodape')" id="tab-btn-rodape" class="tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-100">
+                    <i class="fa-solid fa-scroll"></i> Rodapé
+                </button>
+            </div>
+
+            <!-- TAB CONTENTS CONTAINER -->
+            <div class="bg-dark-800 border border-gold-500/20 rounded-xl p-4 sm:p-5 flex-1 shadow-lg overflow-y-auto max-h-[750px]">
+
+                <!-- 1. ABA IDENTIDADE -->
+                <div id="tab-content-identidade" class="tab-content space-y-5">
+                    <h2 class="text-base font-bold font-cinzel text-gold-400 border-b border-gold-500/20 pb-2 flex items-center justify-between">
+                        <span>Configuração Visual da TV</span>
+                        <i class="fa-solid fa-sliders text-xs text-gray-400"></i>
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Título do Estabelecimento</label>
+                            <input type="text" id="cfg-title" value="GUTEMBERG LOUNGE" oninput="updateState()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Subtítulo / Slogan</label>
+                            <input type="text" id="cfg-subtitle" value="Gastrobar • Coquetelaria • Cafeteria" oninput="updateState()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">URL da Logo (ou Imagem Custom)</label>
+                            <input type="text" id="cfg-logo-url" value="https://placehold.co/200x200/141416/E5A823?text=GUTEMBERG" oninput="updateState()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Modo de Exibição na TV</label>
+                            <select id="cfg-layout" onchange="updateState()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">
+                                <option value="2-col">2 Colunas Cardápio + Mídia Lateral Destaque</option>
+                                <option value="3-col">3 Colunas Cardápio (Sem Mídia Lateral)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-dark-700/50 rounded-lg border border-gold-500/10 space-y-3">
+                        <span class="text-xs font-bold text-gold-400 block uppercase tracking-wider">Cores Temáticas</span>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-gray-400 mb-1">Cor Primária (Destaques)</label>
+                                <input type="color" id="cfg-color-primary" value="#E5A823" oninput="updateState()" class="h-8 w-full bg-dark-900 rounded cursor-pointer border border-dark-600 p-0.5">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 mb-1">Fundo da TV</label>
+                                <input type="color" id="cfg-color-bg" value="#0B0B0C" oninput="updateState()" class="h-8 w-full bg-dark-900 rounded cursor-pointer border border-dark-600 p-0.5">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 mb-1">Texto Geral</label>
+                                <input type="color" id="cfg-color-text" value="#F3F4F6" oninput="updateState()" class="h-8 w-full bg-dark-900 rounded cursor-pointer border border-dark-600 p-0.5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. ABA CARDÁPIO (GERENCIAMENTO DINÂMICO DE CATEGORIAS E ITENS) -->
+                <div id="tab-content-cardapio" class="tab-content hidden space-y-5">
+                    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gold-500/20 pb-3">
+                        <div>
+                            <h2 class="text-base font-bold font-cinzel text-gold-400">Categorias & Itens</h2>
+                            <p class="text-xs text-gray-400">Gerencie produtos e insira itens direto na categoria desejada.</p>
+                        </div>
+                        <button onclick="openCategoryModal()" class="px-3.5 py-2 text-xs font-bold rounded-lg bg-gold-500 hover:bg-gold-400 text-dark-900 transition flex items-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-folder-plus"></i> Nova Categoria
+                        </button>
+                    </div>
+
+                    <!-- Category Container -->
+                    <div id="category-list-container" class="space-y-6">
+                        <!-- Dynamic Categories via JS -->
+                    </div>
+                </div>
+
+                <!-- 3. ABA PLUS + (DESTAQUES, PROMOÇÕES E BANNERS) -->
+                <div id="tab-content-plus" class="tab-content hidden space-y-5">
+                    <div class="flex border-b border-gold-500/20 gap-2">
+                        <button onclick="switchPlusSubTab('highlights')" id="plus-subtab-btn-highlights" class="py-2 px-3 text-xs font-bold border-b-2 border-gold-500 text-gold-400">
+                            <i class="fa-solid fa-fire text-red-400 mr-1.5"></i> Promoções & Destaques
+                        </button>
+                        <button onclick="switchPlusSubTab('banners')" id="plus-subtab-btn-banners" class="py-2 px-3 text-xs font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-200">
+                            <i class="fa-solid fa-images mr-1.5"></i> Banners Adicionais
+                        </button>
+                    </div>
+
+                    <!-- SUBTAB 1: PROMOÇÕES E DESTAQUES -->
+                    <div id="plus-subtab-highlights" class="space-y-4">
+                        <div class="p-3 bg-dark-700/60 rounded-lg border border-gold-500/20 text-xs text-gray-300 flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info text-gold-400 mt-0.5"></i>
+                            <div>
+                                Todos os itens marcados com <strong>"Exibir em Destaque/Promoção"</strong> aparecem aqui e giram automaticamente no carrossel da TV.
+                            </div>
+                        </div>
+
+                        <div id="highlights-items-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <!-- Dynamic Promos -->
+                        </div>
+                    </div>
+
+                    <!-- SUBTAB 2: BANNERS INSTITUCIONAIS -->
+                    <div id="plus-subtab-banners" class="space-y-4 hidden">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-bold uppercase text-gold-400 tracking-wider">Imagens Adicionais do Carrossel</h3>
+                            <button onclick="addCustomBanner()" class="px-2.5 py-1 text-xs rounded bg-dark-700 hover:bg-gold-500 hover:text-dark-900 border border-gold-500/30 transition text-gold-400">
+                                <i class="fa-solid fa-plus"></i> Adicionar Banner
+                            </button>
+                        </div>
+                        <div id="banner-slides-container" class="space-y-2">
+                            <!-- Banner inputs rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ABA PARCEIROS -->
+                <div id="tab-content-parceiros" class="tab-content hidden space-y-5">
+                    <div class="flex justify-between items-center border-b border-gold-500/20 pb-2">
+                        <h2 class="text-base font-bold font-cinzel text-gold-400">Marcas & Parceiros</h2>
+                        <button onclick="addPartner()" class="px-3 py-1.5 text-xs font-bold rounded bg-gold-500 hover:bg-gold-400 text-dark-900 transition flex items-center gap-1">
+                            <i class="fa-solid fa-plus"></i> Adicionar
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400">Logos exibidas no rodapé da TV.</p>
+
+                    <div id="partners-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Dynamic Partners -->
+                    </div>
+                </div>
+
+                <!-- 5. ABA RODAPÉ (LETREIRO PASSANTE) -->
+                <div id="tab-content-rodape" class="tab-content hidden space-y-5">
+                    <h2 class="text-base font-bold font-cinzel text-gold-400 border-b border-gold-500/20 pb-2">Letreiro Digital Passante</h2>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 mb-1">Texto do Rodapé Infinito (Marquee)</label>
+                        <textarea id="cfg-marquee-text" rows="3" oninput="updateState()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">🔥 HAPPY HOUR Gutemberg Lounge: Chopp em dobro de Terça a Sexta das 17h às 20h! • Reserve pelo WhatsApp: (11) 99999-8888 • Aceitamos Pix e Cartões •</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Velocidade da Animação</label>
+                            <select id="cfg-marquee-speed" onchange="updateMarqueeSpeed()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">
+                                <option value="30s">Lenta (30s)</option>
+                                <option value="22s" selected>Normal (22s)</option>
+                                <option value="12s">Rápida (12s)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-300 mb-1">Exibir Relógio em Tempo Real</label>
+                            <select id="cfg-show-clock" onchange="updateState()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2.5 text-sm text-gray-100 focus:outline-none">
+                                <option value="true">Sim</option>
+                                <option value="false">Não</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: TV LIVE PREVIEW (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-4">
+            <div class="bg-dark-800 p-4 rounded-xl border border-gold-500/30 shadow-2xl flex flex-col gap-3 sticky top-20">
+                <div class="flex items-center justify-between border-b border-dark-600 pb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                        <h2 class="text-xs font-bold text-gray-300 uppercase tracking-wider">TV Live Preview (16:9 HD)</h2>
+                    </div>
+                    <button onclick="toggleFullscreen()" class="text-xs text-gold-400 hover:text-gold-500 flex items-center gap-1 font-semibold">
+                        <i class="fa-solid fa-expand"></i> Fullscreen
+                    </button>
+                </div>
+
+                <!-- Aspect Ratio Container (16:9 Screen) -->
+                <div class="relative w-full aspect-video bg-dark-900 rounded-lg overflow-hidden border border-dark-700 shadow-2xl flex flex-col text-white select-none" id="tv-screen-container">
+                    
+                    <!-- TV HEADER -->
+                    <div class="bg-dark-800/90 border-b border-gold-500/20 px-3 py-1.5 flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <img id="tv-logo" src="https://placehold.co/200x200/141416/E5A823?text=GUTEMBERG" class="w-6 h-6 object-cover rounded-full border border-gold-500/40">
+                            <div>
+                                <h3 id="tv-title" class="font-cinzel text-xs font-bold text-gold-400 tracking-wider leading-none">GUTEMBERG LOUNGE</h3>
+                                <p id="tv-subtitle" class="text-[8px] text-gray-400 leading-none">Gastrobar</p>
+                            </div>
+                        </div>
+                        <div id="tv-clock" class="text-[10px] font-mono text-gold-400 font-bold bg-dark-900 px-2 py-0.5 rounded border border-gold-500/20">
+                            00:00:00
+                        </div>
+                    </div>
+
+                    <!-- TV MAIN BODY -->
+                    <div class="flex-1 grid grid-cols-12 gap-2 p-2.5 overflow-hidden" id="tv-main-grid">
+                        
+                        <!-- Left Columns: Menu Categories -->
+                        <div id="tv-menu-zone" class="col-span-8 grid grid-cols-2 gap-2 overflow-hidden">
+                            <!-- Rendered Menu Columns -->
+                        </div>
+
+                        <!-- Right Column: Media Carousel -->
+                        <div id="tv-media-zone" class="col-span-4 flex flex-col gap-2 overflow-hidden border-l border-gold-500/10 pl-2">
+                            <div class="text-[9px] font-bold text-gold-400 uppercase tracking-wider flex items-center gap-1 border-b border-gold-500/20 pb-1">
+                                <i class="fa-solid fa-star text-[8px]"></i> Destaques
+                            </div>
+                            
+                            <!-- Slide Display -->
+                            <div class="flex-1 bg-dark-800/80 rounded border border-gold-500/20 overflow-hidden relative flex flex-col justify-center items-center p-1 text-center" id="tv-slide-box">
+                                <img id="tv-slide-img" src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80" class="absolute inset-0 w-full h-full object-cover opacity-50">
+                                <div class="relative z-10 p-2 bg-dark-900/85 rounded border border-gold-500/30 backdrop-blur-sm max-w-[95%]">
+                                    <span id="tv-slide-badge" class="px-1.5 py-0.5 text-[7px] font-bold rounded bg-gold-500 text-dark-900 mb-1 inline-block">
+                                        DESTAQUE
+                                    </span>
+                                    <h4 id="tv-slide-title" class="font-cinzel text-[10px] font-bold text-gold-400 leading-tight">
+                                        Carregando...
+                                    </h4>
+                                    <p id="tv-slide-desc" class="text-[7.5px] text-gray-300 line-clamp-2 my-0.5">
+                                        Aguardando cadastro de itens em destaque...
+                                    </p>
+                                    <div id="tv-slide-price" class="text-[10px] font-bold text-green-400">
+                                        R$ 0,00
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- TV PARTNERS FOOTER BAR -->
+                    <div class="bg-dark-800/80 border-t border-gold-500/20 px-2 py-0.5 flex items-center justify-between gap-2 overflow-hidden h-6">
+                        <span class="text-[7.5px] font-bold text-gold-500 uppercase tracking-widest shrink-0">Parceiros:</span>
+                        <div id="tv-partners-bar" class="flex items-center gap-3 overflow-hidden">
+                            <!-- Partner logos dynamically injected -->
+                        </div>
+                    </div>
+
+                    <!-- TV BOTTOM MARQUEE BAR -->
+                    <div class="bg-gold-500 text-dark-900 text-[8.5px] font-bold py-0.5 px-2 overflow-hidden whitespace-nowrap">
+                        <div id="tv-marquee" class="animate-marquee">
+                            🔥 Gutemberg Lounge • O melhor da Gastronomia e Coquetelaria
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="p-3 bg-dark-700/40 rounded-lg border border-gold-500/10 text-xs text-gray-400">
+                    <p class="flex items-center gap-1.5"><i class="fa-solid fa-mobile-retro text-gold-400"></i> Controle Instantâneo via Celular:</p>
+                    <p class="text-[11px] mt-1">Sua TV se atualiza instantaneamente a cada clique no seu smartphone através da nuvem!</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: CONTROLE REMOTO MOBILE SYNC QR CODE -->
+    <div id="sync-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-800 border border-gold-500/30 w-full max-w-sm rounded-xl p-5 shadow-2xl space-y-4 text-center">
+            <div class="flex justify-between items-center border-b border-dark-600 pb-2">
+                <h3 class="font-cinzel text-base font-bold text-gold-400"><i class="fa-solid fa-qrcode mr-1"></i> Conectar Celular</h3>
+                <button onclick="closeSyncModal()" class="text-gray-400 hover:text-gray-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-xs text-gray-300">Escaneie o QR Code com a câmera do smartphone para controlar e editar este cardápio em tempo real:</p>
+
+            <div class="flex justify-center p-3 bg-white rounded-xl shadow-inner w-fit mx-auto">
+                <div id="qrcode-target"></div>
+            </div>
+
+            <div class="space-y-2">
+                <input type="text" id="sync-url-display" readonly class="w-full bg-dark-900 border border-dark-600 rounded p-2 text-[10px] font-mono text-gold-400 text-center select-all">
+                <button onclick="copySyncLink()" class="w-full py-2 text-xs font-bold rounded bg-gold-500 text-dark-900 hover:bg-gold-400">
+                    <i class="fa-solid fa-copy"></i> Copiar Link do Controle
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: NOVA / EDITAR CATEGORIA -->
+    <div id="category-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-800 border border-gold-500/30 w-full max-w-md rounded-xl p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-dark-600 pb-2">
+                <h3 id="cat-modal-title" class="font-cinzel text-base font-bold text-gold-400">Criar Nova Categoria</h3>
+                <button onclick="closeCategoryModal()" class="text-gray-400 hover:text-gray-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <input type="hidden" id="cat-edit-index" value="-1">
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Nome da Categoria</label>
+                <input type="text" id="cat-name-input" placeholder="Ex: Whiskys Especiais" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-300 mb-1">Ícone (FontAwesome Class)</label>
+                <div class="flex gap-2">
+                    <input type="text" id="cat-icon-input" value="fa-solid fa-utensils" class="flex-1 bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none">
+                    <div class="w-10 h-10 bg-dark-900 rounded border border-dark-600 flex items-center justify-center text-gold-400">
+                        <i id="cat-icon-preview" class="fa-solid fa-utensils"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeCategoryModal()" class="px-4 py-2 text-xs rounded bg-dark-700 text-gray-300">Cancelar</button>
+                <button onclick="saveCategory()" class="px-4 py-2 text-xs font-bold rounded bg-gold-500 hover:bg-gold-400 text-dark-900">Salvar Categoria</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADICIONAR / EDITAR ITEM NO CARDÁPIO -->
+    <div id="item-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-800 border border-gold-500/30 w-full max-w-lg rounded-xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-dark-600 pb-2">
+                <h3 id="item-modal-title" class="font-cinzel text-base font-bold text-gold-400">Adicionar Item ao Cardápio</h3>
+                <button onclick="closeItemModal()" class="text-gray-400 hover:text-gray-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <input type="hidden" id="item-cat-index" value="-1">
+            <input type="hidden" id="item-edit-index" value="-1">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Nome do Item / Prato / Drink *</label>
+                    <input type="text" id="item-name" placeholder="Ex: Moscow Mule Gutemberg" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Preço (R$) *</label>
+                    <input type="text" id="item-price" placeholder="R$ 38,00" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none">
+                </div>
+
+                <!-- SELETOR EM CASCATA DE BADGES / SELOS -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Selo / Badge de Destaque</label>
+                    <select id="item-badge-select" onchange="handleBadgeSelectChange()" class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none">
+                        <option value="">Nenhum Selo</option>
+                        <option value="MAIS VENDIDO">Mais Vendido</option>
+                        <option value="NOVIDADE">Novidade</option>
+                        <option value="CHEF'S SPECIAL">Chef's Special</option>
+                        <option value="VEGETARIANO">Vegetariano</option>
+                        <option value="ARTESANAL">Artesanal</option>
+                        <option value="CUSTOM">+ Criar Badge Customizado...</option>
+                    </select>
+                </div>
+
+                <!-- CAMPO CONDICIONAL PARA BADGE CUSTOMIZADO -->
+                <div id="custom-badge-container" class="md:col-span-2 hidden bg-dark-700/50 p-2.5 rounded border border-gold-500/20 space-y-2">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gold-400 mb-1">Texto do Badge Customizado</label>
+                        <input type="text" id="item-custom-badge-text" placeholder="Ex: Edição Limitada" class="w-full bg-dark-900 border border-dark-600 rounded p-1.5 text-xs text-gray-100">
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">Descrição / Ingredientes</label>
+                    <textarea id="item-desc" rows="2" placeholder="Ex: Vodka, xarope de gengibre, espuma de limão." class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none"></textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-semibold text-gray-300 mb-1">URL da Imagem (Para Slides e Destaque na TV)</label>
+                    <input type="text" id="item-media-url" placeholder="https://..." class="w-full bg-dark-900 border border-dark-600 focus:border-gold-500 rounded p-2 text-sm text-gray-100 focus:outline-none">
+                </div>
+
+                <div class="md:col-span-2 bg-dark-700/40 p-3 rounded border border-gold-500/20 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-gold-400 block">Exibir em Destaque / Promoção na TV</span>
+                        <span class="text-[10px] text-gray-400">Insere o item na rotação lateral de imagens do painel TV</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="item-is-highlight" class="sr-only peer">
+                        <div class="w-9 h-5 bg-dark-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gold-500"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeItemModal()" class="px-4 py-2 text-xs rounded bg-dark-700 text-gray-300">Cancelar</button>
+                <button onclick="saveMenuItem()" class="px-4 py-2 text-xs font-bold rounded bg-gold-500 hover:bg-gold-400 text-dark-900">Salvar Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE REALTIME REMOTE CONTROL IMPLEMENTATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // APP STATE INITIALIZATION
+        const defaultState = {
+            title: "GUTEMBERG LOUNGE",
+            subtitle: "Gastrobar • Coquetelaria • Cafeteria",
+            logoUrl: "https://placehold.co/200x200/141416/E5A823?text=GUTEMBERG",
+            layout: "2-col",
+            colorPrimary: "#E5A823",
+            colorBg: "#0B0B0C",
+            colorText: "#F3F4F6",
+            marqueeText: "🔥 HAPPY HOUR Gutemberg Lounge: Chopp em dobro de Terça a Sexta das 17h às 20h! • Reserve seu evento: (11) 99999-8888 •",
+            marqueeSpeed: "22s",
+            showClock: true,
+            categories: [
+                {
+                    name: "Choperia & Petiscos",
+                    icon: "fa-solid fa-beer-mug-empty",
+                    items: [
+                        { name: "Chopp Pilsen Extra 500ml", price: "R$ 14,00", desc: "Cremoso, leve e servido trincando.", badge: "MAIS VENDIDO", isHighlight: true, mediaUrl: "https://images.unsplash.com/photo-1535958636474-b021ee887b13?auto=format&fit=crop&w=600&q=80" },
+                        { name: "Tábua de Iscas de Mignon", price: "R$ 68,00", desc: "Acompanha molho gorgonzola e torrada.", badge: "CHEF'S SPECIAL", isHighlight: true, mediaUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" }
+                    ]
+                },
+                {
+                    name: "Drinks & Coquetelaria",
+                    icon: "fa-solid fa-martini-glass-citrus",
+                    items: [
+                        { name: "Moscow Mule Gutemberg", price: "R$ 36,00", desc: "Vodka, xarope de gengibre e espuma artesanal.", badge: "ARTESANAL", isHighlight: true, mediaUrl: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80" }
+                    ]
+                }
+            ],
+            customBanners: [
+                "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80"
+            ],
+            partners: [
+                { name: "Heineken", logo: "https://placehold.co/120x40/141416/E5A823?text=HEINEKEN" },
+                { name: "Chivas", logo: "https://placehold.co/120x40/141416/E5A823?text=CHIVAS" }
+            ]
+        };
+
+        window.appState = JSON.parse(localStorage.getItem('gutemberg_tv_state')) || defaultState;
+
+        // Firebase Sync Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gutemberg-tv-menu';
+        let db = null;
+        let isRemoteConnected = false;
+
+        if (typeof __firebase_config !== 'undefined') {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                db = getFirestore(app);
+
+                const authPromise = typeof __initial_auth_token !== 'undefined' && __initial_auth_token
+                    ? signInWithCustomToken(auth, __initial_auth_token)
+                    : signInAnonymously(auth);
+
+                authPromise.then(() => {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tv_state', 'current');
+                    
+                    // Listen for remote changes
+                    onSnapshot(docRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            window.appState = snapshot.data();
+                            updateStateUI();
+                            renderTVPreview();
+                            setRemoteBadge(true);
+                        }
+                    }, (err) => console.warn("Firebase listener error:", err));
+                });
+            } catch (e) {
+                console.warn("Firebase not configured, fallback to localStorage:", e);
+            }
+        }
+
+        // Global function to sync state to Firebase
+        window.syncStateToCloud = async function() {
+            localStorage.setItem('gutemberg_tv_state', JSON.stringify(window.appState));
+            if (db) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'tv_state', 'current');
+                    await setDoc(docRef, window.appState);
+                    setRemoteBadge(true);
+                } catch(e) {
+                    console.error("Cloud sync fail:", e);
+                }
+            }
+        };
+
+        function setRemoteBadge(active) {
+            const badge = document.getElementById('remote-status-badge');
+            const dot = document.getElementById('remote-status-dot');
+            const txt = document.getElementById('remote-status-text');
+            if (active) {
+                dot.className = "w-2 h-2 rounded-full bg-green-500 animate-ping";
+                txt.textContent = "Sincronizado Nuvem";
+                badge.className = "px-2.5 py-1 rounded-full text-xs font-semibold bg-green-950/60 text-green-400 border border-green-500/30 flex items-center gap-1.5";
+            }
+        }
+    </script>
+
+    <script>
+        let currentSlideIndex = 0;
+
+        // TAB SWITCHER
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-gray-100";
+            });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (activeBtn) activeBtn.className = "tab-btn flex-1 min-w-[90px] py-2 px-2 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 bg-gold-500 text-dark-900";
+            
+            const activeContent = document.getElementById(`tab-content-${tabId}`);
+            if (activeContent) activeContent.classList.remove('hidden');
+        }
+
+        function switchPlusSubTab(subTabId) {
+            document.getElementById('plus-subtab-highlights').classList.add('hidden');
+            document.getElementById('plus-subtab-banners').classList.add('hidden');
+            document.getElementById('plus-subtab-btn-highlights').className = "py-2 px-3 text-xs font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-200";
+            document.getElementById('plus-subtab-btn-banners').className = "py-2 px-3 text-xs font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-200";
+
+            if(subTabId === 'highlights') {
+                document.getElementById('plus-subtab-highlights').classList.remove('hidden');
+                document.getElementById('plus-subtab-btn-highlights').className = "py-2 px-3 text-xs font-bold border-b-2 border-gold-500 text-gold-400";
+            } else {
+                document.getElementById('plus-subtab-banners').classList.remove('hidden');
+                document.getElementById('plus-subtab-btn-banners').className = "py-2 px-3 text-xs font-bold border-b-2 border-gold-500 text-gold-400";
+            }
+        }
+
+        // UPDATE STATE FROM INPUTS
+        function updateState() {
+            window.appState.title = document.getElementById('cfg-title').value;
+            window.appState.subtitle = document.getElementById('cfg-subtitle').value;
+            window.appState.logoUrl = document.getElementById('cfg-logo-url').value;
+            window.appState.layout = document.getElementById('cfg-layout').value;
+            window.appState.colorPrimary = document.getElementById('cfg-color-primary').value;
+            window.appState.colorBg = document.getElementById('cfg-color-bg').value;
+            window.appState.colorText = document.getElementById('cfg-color-text').value;
+            window.appState.marqueeText = document.getElementById('cfg-marquee-text').value;
+            window.appState.showClock = document.getElementById('cfg-show-clock').value === 'true';
+
+            renderTVPreview();
+            if (window.syncStateToCloud) window.syncStateToCloud();
+        }
+
+        function updateStateUI() {
+            document.getElementById('cfg-title').value = window.appState.title || "";
+            document.getElementById('cfg-subtitle').value = window.appState.subtitle || "";
+            document.getElementById('cfg-logo-url').value = window.appState.logoUrl || "";
+            document.getElementById('cfg-layout').value = window.appState.layout || "2-col";
+            document.getElementById('cfg-color-primary').value = window.appState.colorPrimary || "#E5A823";
+            document.getElementById('cfg-color-bg').value = window.appState.colorBg || "#0B0B0C";
+            document.getElementById('cfg-color-text').value = window.appState.colorText || "#F3F4F6";
+            document.getElementById('cfg-marquee-text').value = window.appState.marqueeText || "";
+            
+            renderCategoriesManager();
+            renderHighlightsSubTab();
+            renderBannersSubTab();
+            renderPartnersManager();
+        }
+
+        // CATEGORIES MANAGEMENT
+        function renderCategoriesManager() {
+            const container = document.getElementById('category-list-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.appState.categories.forEach((cat, catIdx) => {
+                const catCard = document.createElement('div');
+                catCard.className = "bg-dark-700/50 rounded-xl p-4 border border-gold-500/20 space-y-3 shadow-md";
+                
+                catCard.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-dark-600 pb-2">
+                        <div class="flex items-center gap-2">
+                            <i class="${cat.icon} text-gold-400"></i>
+                            <h3 class="font-cinzel text-sm font-bold text-gold-400">${cat.name}</h3>
+                            <span class="text-[10px] bg-dark-900 px-2 py-0.5 rounded text-gray-400 font-mono">${cat.items.length} itens</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="openItemModal(${catIdx})" class="px-2.5 py-1 text-xs font-bold rounded bg-gold-500/20 hover:bg-gold-500 text-gold-400 hover:text-dark-900 transition flex items-center gap-1 border border-gold-500/30">
+                                <i class="fa-solid fa-plus"></i> Item
+                            </button>
+                            <button onclick="editCategory(${catIdx})" class="p-1.5 text-xs text-gray-400 hover:text-gold-400"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteCategory(${catIdx})" class="p-1.5 text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        ${cat.items.map((item, itemIdx) => `
+                            <div class="flex items-center justify-between bg-dark-900/80 p-2.5 rounded border border-dark-600 text-xs gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-gray-100 truncate">${item.name}</span>
+                                        ${item.badge ? `<span class="px-1.5 py-0.5 text-[8px] font-bold rounded bg-gold-500/20 text-gold-400 border border-gold-500/30">${item.badge}</span>` : ''}
+                                        ${item.isHighlight ? `<i class="fa-solid fa-star text-yellow-400 text-[10px]" title="Em destaque"></i>` : ''}
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 truncate">${item.desc || 'Sem descrição'}</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-gold-400">${item.price}</span>
+                                    <button onclick="openItemModal(${catIdx}, ${itemIdx})" class="p-1 text-gray-400 hover:text-gold-400"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteMenuItem(${catIdx}, ${itemIdx})" class="p-1 text-red-400 hover:text-red-300"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(catCard);
+            });
+        }
+
+        // HIGHLIGHTS SUBTAB MANAGEMENT
+        function renderHighlightsSubTab() {
+            const container = document.getElementById('highlights-items-list');
+            if(!container) return;
+            container.innerHTML = '';
+
+            let count = 0;
+            window.appState.categories.forEach((cat, cIdx) => {
+                cat.items.forEach((item, iIdx) => {
+                    if(item.isHighlight) {
+                        count++;
+                        const card = document.createElement('div');
+                        card.className = "bg-dark-900 p-3 rounded-lg border border-gold-500/20 flex gap-3 items-center";
+                        card.innerHTML = `
+                            <img src="${item.mediaUrl || 'https://placehold.co/100x100/141416/E5A823?text=Promo'}" class="w-12 h-12 object-cover rounded border border-gold-500/30">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-xs font-bold text-gold-400 truncate">${item.name}</h4>
+                                <p class="text-[10px] text-gray-400 truncate">${cat.name}</p>
+                                <span class="text-xs font-bold text-green-400">${item.price}</span>
+                            </div>
+                            <button onclick="toggleHighlight(${cIdx}, ${iIdx})" class="px-2 py-1 text-[10px] bg-red-900/30 text-red-400 border border-red-500/30 rounded hover:bg-red-900/60">
+                                Remover
+                            </button>
+                        `;
+                        container.appendChild(card);
+                    }
+                });
+            });
+
+            if(count === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-500 col-span-2 text-center py-4">Nenhum item marcado em Destaque/Promoção.</p>`;
+            }
+        }
+
+        function toggleHighlight(catIdx, itemIdx) {
+            window.appState.categories[catIdx].items[itemIdx].isHighlight = false;
+            saveAllData();
+        }
+
+        // BANNERS SUBTAB
+        function renderBannersSubTab() {
+            const container = document.getElementById('banner-slides-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.appState.customBanners.forEach((url, idx) => {
+                const row = document.createElement('div');
+                row.className = "flex gap-2 items-center";
+                row.innerHTML = `
+                    <input type="text" value="${url}" onchange="updateBannerUrl(${idx}, this.value)" class="flex-1 bg-dark-900 border border-dark-600 rounded p-2 text-xs text-gray-100">
+                    <button onclick="deleteBanner(${idx})" class="p-2 text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addCustomBanner() {
+            window.appState.customBanners.push("https://placehold.co/600x400/141416/E5A823?text=Banner+Gutemberg");
+            saveAllData();
+        }
+
+        function updateBannerUrl(idx, val) {
+            window.appState.customBanners[idx] = val;
+            saveAllData();
+        }
+
+        function deleteBanner(idx) {
+            window.appState.customBanners.splice(idx, 1);
+            saveAllData();
+        }
+
+        // PARTNERS MANAGEMENT
+        function renderPartnersManager() {
+            const container = document.getElementById('partners-list-container');
+            if(!container) return;
+            container.innerHTML = '';
+
+            window.appState.partners.forEach((p, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-dark-900 p-2.5 rounded border border-dark-600 flex gap-2 items-center";
+                card.innerHTML = `
+                    <input type="text" value="${p.name}" onchange="updatePartner(${idx}, 'name', this.value)" placeholder="Nome" class="w-1/3 bg-dark-800 border border-dark-600 rounded p-1.5 text-xs text-gray-100">
+                    <input type="text" value="${p.logo}" onchange="updatePartner(${idx}, 'logo', this.value)" placeholder="URL Logo" class="flex-1 bg-dark-800 border border-dark-600 rounded p-1.5 text-xs text-gray-100">
+                    <button onclick="deletePartner(${idx})" class="p-1.5 text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addPartner() {
+            window.appState.partners.push({ name: "Novo Parceiro", logo: "https://placehold.co/120x40/141416/E5A823?text=PARCEIRO" });
+            saveAllData();
+        }
+
+        function updatePartner(idx, key, val) {
+            window.appState.partners[idx][key] = val;
+            saveAllData();
+        }
+
+        function deletePartner(idx) {
+            window.appState.partners.splice(idx, 1);
+            saveAllData();
+        }
+
+        // MODALS HANDLING
+        function openCategoryModal(catIdx = -1) {
+            document.getElementById('cat-edit-index').value = catIdx;
+            if(catIdx >= 0) {
+                const cat = window.appState.categories[catIdx];
+                document.getElementById('cat-name-input').value = cat.name;
+                document.getElementById('cat-icon-input').value = cat.icon;
+                document.getElementById('cat-modal-title').textContent = "Editar Categoria";
+            } else {
+                document.getElementById('cat-name-input').value = "";
+                document.getElementById('cat-icon-input').value = "fa-solid fa-utensils";
+                document.getElementById('cat-modal-title').textContent = "Criar Nova Categoria";
+            }
+            document.getElementById('category-modal').classList.remove('hidden');
+        }
+
+        function closeCategoryModal() {
+            document.getElementById('category-modal').classList.add('hidden');
+        }
+
+        function saveCategory() {
+            const idx = parseInt(document.getElementById('cat-edit-index').value);
+            const name = document.getElementById('cat-name-input').value.trim();
+            const icon = document.getElementById('cat-icon-input').value.trim();
+
+            if(!name) return;
+
+            if(idx >= 0) {
+                window.appState.categories[idx].name = name;
+                window.appState.categories[idx].icon = icon;
+            } else {
+                window.appState.categories.push({ name, icon, items: [] });
+            }
+
+            closeCategoryModal();
+            saveAllData();
+        }
+
+        function deleteCategory(catIdx) {
+            window.appState.categories.splice(catIdx, 1);
+            saveAllData();
+        }
+
+        // ITEM MODAL & BADGE CASCADE
+        function openItemModal(catIdx, itemIdx = -1) {
+            document.getElementById('item-cat-index').value = catIdx;
+            document.getElementById('item-edit-index').value = itemIdx;
+
+            if(itemIdx >= 0) {
+                const item = window.appState.categories[catIdx].items[itemIdx];
+                document.getElementById('item-name').value = item.name;
+                document.getElementById('item-price').value = item.price;
+                document.getElementById('item-desc').value = item.desc || "";
+                document.getElementById('item-media-url').value = item.mediaUrl || "";
+                document.getElementById('item-is-highlight').checked = !!item.isHighlight;
+
+                // Handle badge cascade selection
+                const badgeSelect = document.getElementById('item-badge-select');
+                if(["MAIS VENDIDO", "NOVIDADE", "CHEF'S SPECIAL", "VEGETARIANO", "ARTESANAL"].includes(item.badge)) {
+                    badgeSelect.value = item.badge;
+                    document.getElementById('custom-badge-container').classList.add('hidden');
+                } else if(item.badge) {
+                    badgeSelect.value = "CUSTOM";
+                    document.getElementById('custom-badge-container').classList.remove('hidden');
+                    document.getElementById('item-custom-badge-text').value = item.badge;
+                } else {
+                    badgeSelect.value = "";
+                    document.getElementById('custom-badge-container').classList.add('hidden');
+                }
+
+                document.getElementById('item-modal-title').textContent = "Editar Item";
+            } else {
+                document.getElementById('item-name').value = "";
+                document.getElementById('item-price').value = "";
+                document.getElementById('item-desc').value = "";
+                document.getElementById('item-media-url').value = "";
+                document.getElementById('item-badge-select').value = "";
+                document.getElementById('custom-badge-container').classList.add('hidden');
+                document.getElementById('item-is-highlight').checked = false;
+                document.getElementById('item-modal-title').textContent = "Adicionar Item";
+            }
+
+            document.getElementById('item-modal').classList.remove('hidden');
+        }
+
+        function closeItemModal() {
+            document.getElementById('item-modal').classList.add('hidden');
+        }
+
+        function handleBadgeSelectChange() {
+            const val = document.getElementById('item-badge-select').value;
+            if(val === 'CUSTOM') {
+                document.getElementById('custom-badge-container').classList.remove('hidden');
+            } else {
+                document.getElementById('custom-badge-container').classList.add('hidden');
+            }
+        }
+
+        function saveMenuItem() {
+            const catIdx = parseInt(document.getElementById('item-cat-index').value);
+            const itemIdx = parseInt(document.getElementById('item-edit-index').value);
+
+            const name = document.getElementById('item-name').value.trim();
+            const price = document.getElementById('item-price').value.trim();
+            const desc = document.getElementById('item-desc').value.trim();
+            const mediaUrl = document.getElementById('item-media-url').value.trim();
+            const isHighlight = document.getElementById('item-is-highlight').checked;
+
+            let badge = document.getElementById('item-badge-select').value;
+            if(badge === 'CUSTOM') {
+                badge = document.getElementById('item-custom-badge-text').value.trim();
+            }
+
+            if(!name || !price) return;
+
+            const itemObj = { name, price, desc, mediaUrl, badge, isHighlight };
+
+            if(itemIdx >= 0) {
+                window.appState.categories[catIdx].items[itemIdx] = itemObj;
+            } else {
+                window.appState.categories[catIdx].items.push(itemObj);
+            }
+
+            closeItemModal();
+            saveAllData();
+        }
+
+        function deleteMenuItem(catIdx, itemIdx) {
+            window.appState.categories[catIdx].items.splice(itemIdx, 1);
+            saveAllData();
+        }
+
+        // SAVE & RENDER PIPELINE
+        function saveAllData() {
+            updateStateUI();
+            renderTVPreview();
+            if (window.syncStateToCloud) window.syncStateToCloud();
+        }
+
+        // RENDER LIVE TV PREVIEW (16:9 SCREEN)
+        function renderTVPreview() {
+            const state = window.appState;
+            
+            // Apply colors and texts
+            document.getElementById('tv-title').textContent = state.title;
+            document.getElementById('tv-subtitle').textContent = state.subtitle;
+            document.getElementById('tv-logo').src = state.logoUrl || "https://placehold.co/200x200/141416/E5A823?text=GUTEMBERG";
+            document.getElementById('tv-marquee').textContent = state.marqueeText;
+            document.getElementById('tv-screen-container').style.backgroundColor = state.colorBg;
+
+            // Layout Mode Switcher (2-col vs 3-col)
+            const menuZone = document.getElementById('tv-menu-zone');
+            const mediaZone = document.getElementById('tv-media-zone');
+
+            if(state.layout === '3-col') {
+                menuZone.className = "col-span-12 grid grid-cols-3 gap-2 overflow-hidden";
+                mediaZone.classList.add('hidden');
+            } else {
+                menuZone.className = "col-span-8 grid grid-cols-2 gap-2 overflow-hidden";
+                mediaZone.classList.remove('hidden');
+            }
+
+            // Render TV Menu Categories
+            menuZone.innerHTML = '';
+            state.categories.forEach(cat => {
+                const catDiv = document.createElement('div');
+                catDiv.className = "bg-dark-800/60 p-2 rounded border border-gold-500/20 flex flex-col h-full overflow-hidden";
+                
+                catDiv.innerHTML = `
+                    <div class="text-[9.5px] font-bold font-cinzel text-gold-400 border-b border-gold-500/20 pb-1 mb-1.5 flex items-center gap-1.5 truncate">
+                        <i class="${cat.icon} text-[8px]"></i> ${cat.name}
+                    </div>
+                    <div class="space-y-1.5 overflow-hidden flex-1">
+                        ${cat.items.map(item => `
+                            <div class="leading-tight">
+                                <div class="flex justify-between items-baseline gap-1">
+                                    <span class="text-[8.5px] font-bold truncate" style="color: ${state.colorText}">${item.name}</span>
+                                    <span class="text-[8.5px] font-bold text-gold-400 shrink-0">${item.price}</span>
+                                </div>
+                                ${item.desc ? `<p class="text-[7px] text-gray-400 truncate">${item.desc}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                menuZone.appendChild(catDiv);
+            });
+
+            // Render Partners Footer
+            const partnersBar = document.getElementById('tv-partners-bar');
+            partnersBar.innerHTML = '';
+            state.partners.forEach(p => {
+                const img = document.createElement('img');
+                img.src = p.logo;
+                img.className = "h-3.5 object-contain opacity-80";
+                partnersBar.appendChild(img);
+            });
+        }
+
+        // CAROUSEL SLIDER ENGINE
+        function rotateTVSlides() {
+            const highlights = [];
+            window.appState.categories.forEach(cat => {
+                cat.items.forEach(item => {
+                    if(item.isHighlight && item.mediaUrl) {
+                        highlights.push(item);
+                    }
+                });
+            });
+
+            window.appState.customBanners.forEach(bannerUrl => {
+                highlights.push({
+                    name: window.appState.title,
+                    desc: window.appState.subtitle,
+                    price: "Lounge Gastrobar",
+                    badge: "Especial",
+                    mediaUrl: bannerUrl
+                });
+            });
+
+            if(highlights.length === 0) return;
+
+            currentSlideIndex = (currentSlideIndex + 1) % highlights.length;
+            const slide = highlights[currentSlideIndex];
+
+            document.getElementById('tv-slide-img').src = slide.mediaUrl;
+            document.getElementById('tv-slide-title').textContent = slide.name;
+            document.getElementById('tv-slide-desc').textContent = slide.desc || '';
+            document.getElementById('tv-slide-price').textContent = slide.price;
+            document.getElementById('tv-slide-badge').textContent = slide.badge || "DESTAQUE";
+        }
+
+        // REALTIME CLOCK ENGINE
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR');
+            const clockEl = document.getElementById('tv-clock');
+            if(clockEl) clockEl.textContent = timeStr;
+        }
+
+        function updateMarqueeSpeed() {
+            const speed = document.getElementById('cfg-marquee-speed').value;
+            document.getElementById('tv-marquee').style.animationDuration = speed;
+        }
+
+        // FULLSCREEN TOGGLE
+        function toggleFullscreen() {
+            const elem = document.getElementById('tv-screen-container');
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => alert(`Erro ao abrir fullscreen: ${err.message}`));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // MOBILE REMOTE CONTROL QR CODE MODAL
+        function openSyncModal() {
+            const modal = document.getElementById('sync-modal');
+            const qrTarget = document.getElementById('qrcode-target');
+            const urlDisplay = document.getElementById('sync-url-display');
+
+            qrTarget.innerHTML = '';
+            const currentUrl = window.location.href;
+            urlDisplay.value = currentUrl;
+
+            new QRCode(qrTarget, {
+                text: currentUrl,
+                width: 140,
+                height: 140,
+                colorDark: "#0B0B0C",
+                colorLight: "#FFFFFF"
+            });
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeSyncModal() {
+            document.getElementById('sync-modal').classList.add('hidden');
+        }
+
+        function copySyncLink() {
+            const input = document.getElementById('sync-url-display');
+            input.select();
+            document.execCommand('copy');
+            alert('Link do controle remoto copiado!');
+        }
+
+        // INITIALIZATION ON LOAD
+        window.onload = function() {
+            updateStateUI();
+            renderTVPreview();
+            setInterval(updateClock, 1000);
+            setInterval(rotateTVSlides, 5000);
+        };
+    </script>
+</body>
+</html>
