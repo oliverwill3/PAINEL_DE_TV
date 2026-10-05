@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gutemberg Lounge - Painel TV Multizona</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fontes do Google (Identidade Visual Gutemberg Lounge) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Montserrat:wght@300;400;600;700;800&family=Pinyon+Script&family=Great+Vibes&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    /* Estilos de Fontes da Identidade Visual */
+    .font-brand-title { font-family: 'Cinzel', serif; }
+    .font-brand-script { font-family: 'Pinyon Script', 'Great Vibes', cursive; }
+    .font-brand-sans { font-family: 'Montserrat', sans-serif; }
+
+    /* Custom Scrollbar no Painel */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #121212; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #e5a823; }
+
+    /* Animação do Letreiro (Marquee) */
+    @keyframes marquee {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .animate-marquee {
+      display: flex;
+      width: 200%;
+      animation: marquee 22s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+
+    /* Container 16:9 da TV */
+    .tv-aspect-ratio {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+
+    /* Animação de Transição de Slide */
+    .slide-enter {
+      animation: fadeInScale 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes fadeInScale {
+      0% { opacity: 0; transform: scale(0.985) translateY(6px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes kenBurns {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+    .ken-burns-image {
+      animation: kenBurns 18s ease-in-out infinite alternate;
+      will-change: transform;
+    }
+    .slide-text-enter {
+      animation: slideTextIn 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes slideTextIn {
+      from { opacity: 0; transform: translateX(-24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .badge-breathe {
+      animation: badgeBreathe 3.2s ease-in-out infinite;
+    }
+    @keyframes badgeBreathe {
+      0%, 100% { box-shadow: 0 0 0 rgba(229, 168, 35, 0); }
+      50% { box-shadow: 0 0 15px rgba(229, 168, 35, 0.55); }
+    }
+    .featured-product-card {
+      border: 1px solid rgba(229, 168, 35, 0.32);
+      background: linear-gradient(135deg, rgba(25, 23, 18, 0.98), rgba(8, 8, 8, 0.98));
+      transition: border-color 220ms ease, background-color 220ms ease, transform 220ms ease;
+    }
+    .featured-product-card[data-playing-now="true"] {
+      border-color: rgba(229, 168, 35, 0.95);
+      background: linear-gradient(135deg, rgba(82, 57, 13, 0.65), rgba(14, 13, 10, 0.98));
+      box-shadow: 0 0 16px rgba(229, 168, 35, 0.2), inset 0 0 0 1px rgba(229, 168, 35, 0.2);
+      transform: translateX(-2px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .slide-enter, .ken-burns-image, .slide-text-enter, .badge-breathe, .animate-marquee {
+        animation: none !important;
+      }
+    }
+
+    /* Moldura estilo Placa Gutemberg */
+    .gutemberg-border {
+      border: 2px solid var(--primary-gold, #e5a823);
+      border-radius: 8px;
+      position: relative;
+    }
+    .gutemberg-border::before {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px; right: 3px; bottom: 3px;
+      border: 1px solid rgba(229, 168, 35, 0.4);
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    /* Efeito Glow Dourado */
+    .gold-glow {
+      text-shadow: 0 0 12px rgba(229, 168, 35, 0.4);
+    }
+
+    #tv-screen [data-editable-text] { cursor: pointer; }
+    #tv-screen [data-editable-text]:hover { outline: 2px dashed rgba(229, 168, 35, 0.8); outline-offset: 2px; }
+  </style>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandGold: '#E5A823',
+            brandDark: '#121212',
+            brandCard: '#1A1A1A',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-black text-gray-200 font-brand-sans min-h-screen flex flex-col overflow-x-hidden">
+
+  <!-- TOP HEADER DO SISTEMA -->
+  <header class="bg-brandDark border-b border-gray-800 px-6 py-3 flex items-center justify-between shrink-0">
+    <div class="flex items-center gap-3">
+      <div>
+        <h1 class="font-brand-title text-base font-bold text-white tracking-wider">GUTEMBERG LOUNGE</h1>
+        <p class="text-xs text-brandGold font-medium">Sistema de Mídia Indoor TV Multizona</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span id="save-status" class="hidden sm:inline text-[10px] text-gray-400" role="status" aria-live="polite">Salvo neste navegador</span>
+      <button onclick="toggleTvFullScreen()" class="px-4 py-2 bg-brandGold hover:bg-yellow-500 text-black font-bold text-xs rounded flex items-center gap-2 transition shadow-lg">
+        <i class="fa-solid fa-expand text-sm"></i>
+        <span>Modo TV Tela Cheia</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAINEL PRINCIPAL (SPLIT SCREEN) -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-0 overflow-y-auto lg:overflow-hidden h-[calc(100vh_-_57px)]">
+
+    <!-- COLUNA DA ESQUERDA: CONTROLES & FORMULÁRIO (5 cols) -->
+    <section class="lg:col-span-5 bg-[#141414] border-r border-gray-800 flex flex-col h-[80vh] lg:h-full overflow-y-auto p-5 gap-6">
+
+      <div class="flex flex-wrap md:flex-nowrap items-center justify-between gap-2">
+        <h2 class="shrink-0 whitespace-nowrap text-[11px] font-bold text-brandGold uppercase tracking-wide flex items-center gap-1.5">
+          <i class="fa-solid fa-sliders"></i> Configurações do Painel
+        </h2>
+        <div id="quick-text-editor" class="ml-auto hidden shrink-0 items-center gap-1 rounded-lg border border-gray-800 bg-black/50 px-1 py-1" aria-label="Edição rápida do texto">
+          <div class="flex items-center gap-1" title="Escolher fonte">
+            <i class="fa-solid fa-font text-[10px] text-gray-500" aria-hidden="true"></i>
+            <select id="input-brand-font" aria-label="Fonte do nome" onchange="handleBrandFontChange()" class="w-[82px] bg-[#181818] border border-gray-800 rounded px-1 py-1.5 text-[9px] text-gray-300">
+              <option value="Cinzel">Cinzel</option><option value="Montserrat">Montserrat</option><option value="Georgia">Georgia</option><option value="Arial">Arial</option>
+              <option value="__add_font__">+ Adicionar fonte baixada…</option>
+            </select>
+          </div>
+          <div class="flex w-[48px] shrink-0 items-center gap-1" title="Tamanho do texto">
+            <i class="fa-solid fa-text-height text-[10px] text-gray-500" aria-hidden="true"></i>
+            <input type="number" id="input-brand-size" aria-label="Tamanho do texto" min="8" max="96" value="30" oninput="updateBrandStyle()" class="w-full bg-[#181818] border border-gray-800 rounded px-1 py-1.5 text-[9px] text-gray-300">
+          </div>
+          <input type="text" id="input-editable-text" aria-label="Texto selecionado na prévia" title="Editar texto selecionado" oninput="updateSelectedTextContent(this.value)" class="w-28 bg-[#181818] border border-gray-800 rounded px-2 py-1.5 text-[9px] text-gray-200">
+          <div class="flex w-[72px] shrink-0 items-center gap-1" title="Alinhamento do texto">
+            <i id="brand-align-icon" class="fa-solid fa-align-left text-[10px] text-gray-500" aria-hidden="true"></i>
+            <select id="input-brand-align" aria-label="Alinhamento do texto" onchange="updateBrandStyle()" class="min-w-0 flex-1 bg-[#181818] border border-gray-800 rounded px-1 py-1.5 text-[9px] text-gray-300">
+              <option value="left">Esquerda</option><option value="center">Centro</option><option value="right">Direita</option>
+            </select>
+          </div>
+          <input id="input-custom-font" type="file" accept=".woff2,.woff,.ttf,.otf,font/woff2,font/woff,font/ttf,font/otf" onchange="uploadCustomFont(event)" class="hidden" aria-label="Arquivo de fonte baixada">
+          <button type="button" onclick="hideTextEditor()" aria-label="Fechar edição de texto" title="Fechar" class="px-1 text-[11px] text-gray-500 hover:text-white">×</button>
+        </div>
+      </div>
+      <div id="custom-font-list" class="-mt-5 flex flex-wrap justify-end gap-x-2 px-1 text-[9px] text-gray-500"></div>
+
+      <!-- ABAS PRINCIPAIS DO PAINEL -->
+      <div class="flex flex-wrap bg-black/60 p-1 rounded-lg border border-gray-800 text-[10px] font-semibold gap-1">
+        <button id="tab-btn-brand" onclick="switchTab('brand')" class="flex-1 min-w-[82px] py-2 rounded text-center bg-brandGold text-black font-bold transition">
+          <i class="fa-solid fa-palette mr-1"></i> Identidade
+        </button>
+        <button id="tab-btn-items" onclick="switchTab('items')" class="flex-1 min-w-[82px] py-2 rounded text-center text-gray-400 hover:text-white transition">
+          <i class="fa-solid fa-utensils mr-1"></i> Cardápio
+        </button>
+        <button id="tab-btn-plus" onclick="switchTab('plus')" class="flex-1 min-w-[82px] py-2 rounded text-center text-gray-400 hover:text-white transition">
+          <i class="fa-solid fa-plus mr-1"></i> Plus +
+        </button>
+        <button id="tab-btn-partners" onclick="switchTab('partners')" class="flex-1 min-w-[82px] py-2 rounded text-center text-gray-400 hover:text-white transition">
+          <i class="fa-solid fa-handshake mr-1"></i> Parceiros
+        </button>
+      </div>
+
+      <!-- ABA 1: IDENTIDADE VISUAL E CORES -->
+      <div id="tab-content-brand" class="space-y-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Nome do Estabelecimento</label>
+          <input type="text" id="input-brand-name" value="GUTEMBERG" oninput="updateBrandInfo()" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-brandGold focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Subtítulo Cursivo (Ex: Lounge)</label>
+          <input type="text" id="input-brand-subtitle" value="Lounge" oninput="updateBrandInfo()" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-brandGold focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Slogan da Empresa</label>
+          <input type="text" id="input-brand-slogan" value="Um lugar para começar o dia e ficar até o último brinde." oninput="updateBrandInfo()" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-brandGold focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Rótulo de serviço na TV</label>
+            <input type="text" id="input-service-label" oninput="updateScreenLabels()" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-brandGold focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Título da área de promoções</label>
+            <input type="text" id="input-promo-label" oninput="updateScreenLabels()" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-brandGold focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded border border-gray-800 bg-black p-3">
+            <label class="block text-xs text-gray-300 mb-1">Logo pequeno — ao lado do nome</label>
+            <input type="file" accept="image/*" onchange="uploadLogo('smallLogo', event)" class="w-full text-[10px] text-gray-400">
+            <img id="small-logo-thumb" alt="Prévia do logo pequeno" class="hidden mt-2 h-10 max-w-full object-contain">
+            <button type="button" onclick="removeLogo('smallLogo')" class="mt-2 text-[10px] text-red-300">Remover logo pequeno</button>
+          </div>
+          <div class="rounded border border-gray-800 bg-black p-3">
+            <label class="block text-xs text-gray-300 mb-1">Logo grande — acima das promoções</label>
+            <input type="file" accept="image/*" onchange="uploadLogo('largeLogo', event)" class="w-full text-[10px] text-gray-400">
+            <img id="large-logo-thumb" alt="Prévia do logo grande" class="hidden mt-2 h-10 max-w-full object-contain">
+            <button type="button" onclick="removeLogo('largeLogo')" class="mt-2 text-[10px] text-red-300">Remover logo grande</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Cor Dourada / Destaque</label>
+            <div class="flex items-center gap-2 bg-black border border-gray-700 rounded p-1">
+              <input type="color" id="input-color-gold" value="#e5a823" onchange="updateColors()" class="w-8 h-8 rounded bg-transparent cursor-pointer">
+              <span id="label-color-gold" class="text-xs font-mono text-gray-300">#E5A823</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">Cor de Fundo da TV</label>
+            <div class="flex items-center gap-2 bg-black border border-gray-700 rounded p-1">
+              <input type="color" id="input-color-bg" value="#111111" onchange="updateColors()" class="w-8 h-8 rounded bg-transparent cursor-pointer">
+              <span id="label-color-bg" class="text-xs font-mono text-gray-300">#111111</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Duração padrão por tela (segundos)</label>
+          <input type="number" id="input-slide-timer" value="6" min="3" max="60" onchange="resetSlideTimer()" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-brandGold focus:outline-none">
+          <p class="text-[10px] text-gray-500 mt-1">Cada tela pode ter duração própria. Vídeos podem tocar até o fim.</p>
+          <label class="mt-2 flex items-center gap-2 text-xs text-gray-300"><input type="checkbox" id="input-video-natural" onchange="updateVideoDurationMode()" class="accent-yellow-500"> Respeitar duração integral do vídeo</label>
+        </div>
+      </div>
+
+      <!-- ABA 2: GERENCIADOR DE ITENS / CARDÁPIO -->
+      <div id="tab-content-items" class="hidden space-y-4">
+        <div class="rounded border border-gray-800 bg-black p-3 space-y-3">
+          <h2 class="text-xs font-bold uppercase text-brandGold">Categorias</h2>
+          <div class="flex flex-wrap gap-2">
+            <input id="new-category-name" type="text" placeholder="Nome da categoria" aria-label="Nome da nova categoria" class="min-w-0 flex-1 bg-[#181818] border border-gray-700 rounded px-2 py-2 text-xs text-white" onkeydown="if(event.key==='Enter'){event.preventDefault();promptNewCategory()}">
+            <button type="button" onclick="promptNewCategory()" class="shrink-0 px-3 bg-gray-800 hover:bg-gray-700 rounded text-xs">+ Adicionar Categoria</button>
+          </div>
+          <div id="category-editor-list" class="space-y-2"></div>
+          <p id="category-status" class="min-h-4 text-[10px] text-gray-500" role="status" aria-live="polite">Categorias padrão não podem ser removidas; você pode renomear ou remover as personalizadas.</p>
+        </div>
+        <details class="rounded border border-gray-800 bg-black p-3">
+          <summary class="cursor-pointer text-xs font-bold uppercase text-brandGold">Importar / colar cardápio</summary>
+          <div class="mt-3 space-y-2">
+            <label for="menu-import-text" class="block text-[10px] text-gray-400">Cole produtos, preços e categorias. Use linhas [CATEGORIA] para separar os grupos.</label>
+            <textarea id="menu-import-text" rows="7" placeholder="[CHOPERIA E PETISCOS]&#10;Chopp Pilsen 500ml - Trincando de gelado - R$ 14,90&#10;Porção de Coxinha - 8 unidades recheadas - R$ 34,90&#10;&#10;[DRINKS E COQUETELARIA]&#10;Gin Tropical - Frutas frescas e xarope autoral - R$ 32,90" class="w-full rounded border border-gray-700 bg-[#181818] px-3 py-2 text-xs text-white"></textarea>
+            <label class="flex items-start gap-2 text-[10px] text-gray-300">
+              <input id="menu-import-promotional" type="checkbox" checked class="mt-0.5 accent-yellow-500">
+              Marcar os produtos importados como destaques e incluí-los na rotação da TV
+            </label>
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="button" onclick="importMenuText()" class="rounded bg-green-700 px-3 py-2 text-xs font-bold text-white hover:bg-green-600">Processar e importar cardápio</button>
+              <span id="menu-import-status" role="status" aria-live="polite" class="text-[10px] text-gray-400"></span>
+            </div>
+            <p class="text-[10px] text-gray-500">Cada produto deve ficar em uma linha. Separe nome e descrição por hífen e finalize com o preço (por exemplo: Nome - Descrição - R$ 29,90).</p>
+          </div>
+        </details>
+        <div class="rounded border border-gray-800 bg-black p-3 space-y-2">
+          <h2 class="text-xs font-bold uppercase text-brandGold">Selos personalizados</h2>
+          <div class="flex flex-wrap items-center gap-2">
+            <input id="new-badge-name" type="text" placeholder="Nome do selo" aria-label="Nome do selo personalizado" class="min-w-0 flex-1 bg-[#181818] border border-gray-700 rounded px-2 py-2 text-xs text-white" onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomBadge()}">
+            <input id="new-badge-color" type="color" value="#E5A823" aria-label="Cor do selo personalizado" class="h-8 w-10 cursor-pointer rounded bg-[#181818]">
+            <button type="button" onclick="addCustomBadge()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded text-xs">+ Selo</button>
+          </div>
+          <div id="custom-badge-list" class="space-y-2"></div>
+        </div>
+        <div id="items-editor-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-1"></div>
+      </div>
+
+      <div id="tab-content-plus" class="hidden space-y-4">
+          <h2 class="text-sm font-bold text-brandGold uppercase border-b border-gray-800 pb-2">Plus +</h2>
+          <div class="flex flex-wrap gap-1 rounded border border-gray-800 bg-black/60 p-1 text-[10px]">
+            <button id="plus-tab-btn-marquee" onclick="switchTab('marquee')" class="rounded px-3 py-2 font-bold text-gray-400 hover:text-white">Rodapé</button>
+            <button id="plus-tab-btn-featured" onclick="switchTab('featured')" class="rounded px-3 py-2 font-bold text-gray-400 hover:text-white">Itens em Destaque e Promocional</button>
+            <button id="plus-tab-btn-reviews" onclick="switchTab('reviews')" class="rounded px-3 py-2 font-bold text-gray-400 hover:text-white">Avaliações</button>
+            <button id="plus-tab-btn-events" onclick="switchTab('events')" class="rounded px-3 py-2 font-bold text-gray-400 hover:text-white">Eventos</button>
+            <button id="plus-tab-btn-news" onclick="switchTab('news')" class="rounded px-3 py-2 font-bold text-gray-400 hover:text-white">Informativos</button>
+          </div>
+        </div>
+
+        <div id="tab-content-featured" class="hidden space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-800 pb-2">
+            <div>
+              <h2 class="text-sm font-bold uppercase text-brandGold">Itens em destaque e promocionais</h2>
+              <p class="text-[10px] text-gray-500">Somente os produtos marcados como destaque aparecem no painel lateral e na rotação da TV.</p>
+            </div>
+            <button type="button" onclick="addNewItem('', true)" class="rounded bg-green-700 px-3 py-2 text-xs font-bold">+ Adicionar item promocional</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-xs text-gray-400">
+            <label class="flex items-center gap-2">Exibir
+            <select id="featured-filter" onchange="renderFeaturedEditor()" class="rounded border border-gray-700 bg-[#181818] px-2 py-1 text-white">
+              <option value="promotional">Promocionais</option>
+              <option value="all">Todos os produtos</option>
+            </select>
+            </label>
+            <label class="flex items-center gap-2">Categoria
+              <select id="featured-category-filter" onchange="renderFeaturedEditor()" class="rounded border border-gray-700 bg-[#181818] px-2 py-1 text-white"></select>
+            </label>
+          </div>
+          <div id="featured-editor-container" class="space-y-2"></div>
+        </div>
+
+        <div id="tab-content-news" class="hidden space-y-4">
+          <div class="flex justify-between border-b border-gray-800 pb-2"><h2 class="text-sm font-bold text-brandGold uppercase">Informativos</h2><button onclick="addContent('news')" class="px-3 py-1 bg-green-700 rounded text-xs font-bold">+ Novo</button></div>
+          <div id="news-editor" class="space-y-3"></div>
+        </div>
+
+        <div id="tab-content-reviews" class="hidden space-y-4">
+          <h2 class="text-sm font-bold text-brandGold uppercase border-b border-gray-800 pb-2">Avaliações dos clientes</h2>
+          <div class="rounded border border-gray-800 bg-black p-3 space-y-2">
+            <label class="block text-xs text-gray-400">Link do perfil/avaliações do Google</label>
+            <div class="flex gap-2"><input id="input-google-reviews" type="url" placeholder="https://g.page/r/..." onchange="updateGoogleReviews()" class="flex-1 bg-[#181818] border border-gray-700 rounded px-2 py-2 text-xs text-white"><button onclick="window.open('https://developers.google.com/maps/documentation/places/web-service/place-reviews','_blank','noopener')" class="px-2 bg-gray-800 rounded text-[10px]">Como integrar</button></div>
+            <p id="google-review-status" class="text-[10px] text-amber-300">A importação automática requer Google Places API e uma chave configurada em servidor; o link sozinho não permite buscar avaliações com segurança.</p>
+            <label class="flex items-center gap-2 text-xs text-gray-300"><input type="checkbox" id="input-positive-only" checked onchange="saveStoreData()" class="accent-yellow-500"> Exibir apenas avaliações positivas (4 e 5 estrelas)</label>
+          </div>
+          <div class="flex justify-between border-b border-gray-800 pb-2"><span class="text-xs text-gray-400">Avaliações adicionadas manualmente</span><button onclick="addContent('reviews')" class="px-3 py-1 bg-green-700 rounded text-xs font-bold">+ Avaliação</button></div>
+          <div id="reviews-editor" class="space-y-3"></div>
+        </div>
+
+        <div id="tab-content-events" class="hidden space-y-4">
+          <div class="flex justify-between border-b border-gray-800 pb-2"><h2 class="text-sm font-bold text-brandGold uppercase">Eventos e apresentações</h2><button onclick="addContent('events')" class="px-3 py-1 bg-green-700 rounded text-xs font-bold">+ Evento</button></div>
+          <div id="events-editor" class="space-y-3"></div>
+        </div>
+
+        <div id="tab-content-partners" class="hidden space-y-4">
+          <div class="flex justify-between border-b border-gray-800 pb-2"><h2 class="text-sm font-bold text-brandGold uppercase">Parceiros</h2><button onclick="addContent('partners')" class="px-3 py-1 bg-green-700 rounded text-xs font-bold">+ Parceiro</button></div>
+          <div id="partners-editor" class="space-y-3"></div>
+        </div>
+
+      <!-- ABA 3: TEXTO DO RODAPÉ (MARQUEE) -->
+      <div id="tab-content-marquee" class="hidden space-y-4">
+        <h2 class="text-sm font-bold text-brandGold uppercase tracking-wider border-b border-gray-800 pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-bullhorn"></i> Faixa Promocional Inferior
+        </h2>
+
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Texto do Letreiro Passante</label>
+          <textarea id="input-marquee-text" rows="4" oninput="updateMarqueeText()" class="w-full bg-black border border-gray-700 rounded p-3 text-sm text-white focus:border-brandGold focus:outline-none leading-relaxed">🍺 BEM-VINDO AO GUTEMBERG LOUNGE • CHOPP PILSEN GELADO R$ 14,90 • ALMOÇO EXECUTIVO A PARTIR DE R$ 36,90 • BISTRÔ • CHOPERIA • CAFÉ • PEÇA PELO IFOOD E ZAP 🥂</textarea>
+          <p class="text-[11px] text-gray-500 mt-1">Dica: Use emojis para destacar promoções no rodape da TV.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- COLUNA DA DIREITA: PRÉ-VISUALIZAÇÃO DA TV 16:9 (7 cols) -->
+    <section class="lg:col-span-7 bg-black p-4 lg:p-8 flex flex-col justify-center items-center min-h-[70vh] lg:h-full relative overflow-hidden">
+      
+      <!-- BADGE DE STATUS -->
+      <div class="absolute top-4 left-6 z-20 flex items-center gap-2 bg-black/80 px-3 py-1 rounded-full border border-gray-800 text-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+        <span class="text-gray-300 font-mono text-[11px]">LIVE PREVIEW (16:9 FULL HD)</span>
+      </div>
+
+      <!-- CONTAINER DA TELA DA TV (16:9 RATIO) -->
+      <div id="tv-screen" class="tv-aspect-ratio bg-[#111111] rounded-xl border-2 border-gray-800 flex flex-col justify-between p-6 select-none transition-colors duration-500">
+        
+        <!-- TOP ZONE (HEADER COM LOGO ROTATIVO E SLOGAN) -->
+        <header class="flex items-center justify-between border-b border-brandGold/30 pb-4 z-10">
+          <div class="flex items-center gap-4">
+            <!-- LOGO BADGE ESTILO FACHADA GUTEMBERG -->
+            <div id="tv-brand-lockup" class="gutemberg-border px-4 py-1.5 bg-black/80 flex items-center gap-3 shadow-lg">
+              <img id="tv-brand-logo" class="hidden max-w-[80px] max-h-10 object-contain" alt="Logotipo pequeno do estabelecimento">
+              <div>
+                <span id="tv-brand-title" data-editable-text="brand-title" class="font-brand-title text-base font-bold text-white tracking-widest block leading-none">GUTEMBERG</span>
+                <span id="tv-brand-subtitle" data-editable-text="brand-subtitle" class="font-brand-script text-brandGold text-lg leading-none block -mt-1">Lounge</span>
+              </div>
+            </div>
+            <div class="hidden sm:block border-l border-gray-700 h-8"></div>
+            <p id="tv-brand-slogan" data-editable-text="brand-slogan" class="hidden sm:block text-xs text-gray-300 italic max-w-xs leading-tight">
+              Um lugar para começar o dia e ficar até o último brinde.
+            </p>
+          </div>
+
+          <!-- INDICADOR DO TIPO DE SERVIÇO / BADGE -->
+          <div class="px-3 py-1 bg-brandGold/10 border border-brandGold/40 rounded-full">
+            <span id="tv-service-label" data-editable-text="service-label" class="text-[11px] font-bold text-brandGold uppercase tracking-widest">Bistrô • Choperia • Café</span>
+          </div>
+        </header>
+
+        <!-- MAIN ZONE (SLIDE ATIVO DE PRODUTO EM DESTAQUE) -->
+        <div class="flex-1 grid grid-cols-12 gap-3 my-3 min-h-0 z-10 overflow-hidden">
+          <div id="tv-slide-stage" class="col-span-8 grid grid-cols-12 gap-4 min-h-0 overflow-hidden">
+            <!-- O conteúdo do slide ativo é renderizado dinamicamente aqui -->
+          </div>
+          <aside class="col-span-4 rounded-lg border border-brandGold/40 bg-black/60 p-3 flex flex-col gap-2 overflow-hidden">
+            <p id="tv-promo-label" data-editable-text="promo-label" class="shrink-0 text-[10px] lg:text-xs uppercase tracking-[0.16em] text-brandGold">Promoções e destaques</p>
+            <div id="tv-featured-list" class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto text-xs lg:text-sm text-white"></div>
+            <div id="tv-featured-logo-wrap" class="hidden shrink-0 justify-center border-t border-brandGold/20 pt-2"><img id="tv-featured-logo" class="max-h-24 max-w-[85%] object-contain" alt="Logotipo grande"></div>
+            <div id="tv-extra-info" class="max-h-[24%] shrink-0 overflow-y-auto border-t border-gray-700 pt-2 text-[9px] lg:text-[10px] text-gray-300"></div>
+          </aside>
+        </div>
+
+        <!-- BOTTOM ZONE (RODAPÉ MULTIZONA COM MARQUEE CONTINUO) -->
+        <footer class="border-t-2 border-brandGold/40 pt-2 bg-black/90 -mx-6 -mb-6 px-6 py-2 z-10 overflow-hidden">
+          <div class="overflow-hidden whitespace-nowrap relative">
+            <div id="tv-marquee-wrapper" class="animate-marquee text-brandGold font-bold text-base lg:text-lg tracking-wider uppercase flex gap-12">
+              <span id="tv-marquee-1" data-editable-text="marquee"></span>
+              <span id="tv-marquee-2" data-editable-text="marquee"></span>
+            </div>
+          </div>
+        </footer>
+
+        <!-- GLOW DE FUNDO DECORATIVO -->
+        <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-brandGold/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-20 -left-20 w-80 h-80 bg-brandGold/5 rounded-full blur-2xl pointer-events-none"></div>
+      </div>
+
+      <!-- CONTROLES DO SLIDESHOW EMBAIXO DA TV -->
+      <div class="mt-4 flex items-center gap-4 text-xs text-gray-400">
+        <button onclick="prevSlide()" class="p-2 bg-gray-900 hover:bg-gray-800 rounded border border-gray-700 text-white transition">
+          <i class="fa-solid fa-chevron-left"></i> Anterior
+        </button>
+        <span id="slide-counter-label" class="font-mono text-gray-300">Slide 1 de 4</span>
+        <button onclick="nextSlide()" class="p-2 bg-gray-900 hover:bg-gray-800 rounded border border-gray-700 text-white transition">
+          Próximo <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button id="btn-toggle-pause" onclick="togglePause()" class="ml-2 p-2 bg-brandGold/20 text-brandGold hover:bg-brandGold/30 rounded border border-brandGold/40 transition">
+          <i class="fa-solid fa-pause"></i> Pausar
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT DE LÓGICA E DADOS -->
+  <script>
+    const DEFAULT_CATEGORIES = [
+      "Choperia e petiscos",
+      "Drinks e coquetelaria",
+      "Cafeterias e matinais",
+      "Bistrô e almoço"
+    ];
+    const DEFAULT_BADGES = [
+      { name: "O MAIS PEDIDO", color: "#E5A823" },
+      { name: "HAPPY HOUR", color: "#F97316" },
+      { name: "ALMOÇO EXECUTIVO", color: "#16A34A" },
+      { name: "CAFÉ DA MANHÃ", color: "#B7791F" },
+      { name: "NOVIDADE", color: "#22C55E" },
+      { name: "PROMOÇÃO", color: "#EF4444" }
+    ];
+
+    // DADOS INICIAIS DO GUTEMBERG LOUNGE
+    let storeData = {
+      name: "GUTEMBERG",
+      subtitle: "Lounge",
+      slogan: "Um lugar para começar o dia e ficar até o último brinde.",
+      serviceLabel: "Bistrô • Choperia • Café",
+      promoLabel: "Promoções e destaques",
+      emptyMessages: {
+        items: "Nenhum item cadastrado. Adicione itens no painel lateral.",
+        featured: "Marque produtos como destaque no Cardápio para exibi-los aqui.",
+        extraInfo: "Informativos, eventos e avaliações aparecerão aqui.",
+        media: "Adicione uma imagem ou vídeo"
+      },
+      goldColor: "#e5a823",
+      bgColor: "#111111",
+      slideTimerSec: 6,
+      font: "Cinzel",
+      brandSize: 30,
+      brandAlign: "left",
+      textStyles: {},
+      smallLogo: "",
+      largeLogo: "",
+      customFonts: [],
+      categories: [...DEFAULT_CATEGORIES],
+      customBadges: [],
+      googleReviewsUrl: "",
+      positiveOnly: true,
+      respectVideoDuration: true,
+      marqueeText: "🍺 BEM-VINDO AO GUTEMBERG LOUNGE • CHOPP PILSEN GELADO R$ 14,90 • ALMOÇO EXECUTIVO A PARTIR DE R$ 36,90 • BISTRÔ • CHOPERIA • CAFÉ • PEÇA PELO IFOOD E ZAP 🥂",
+      news: [],
+      reviews: [],
+      events: [],
+      partners: [],
+      items: [
+        {
+          id: 1,
+          category: "CHOPERIA & PETISCOS",
+          title: "Chopp Pilsen & Coxinhas Gutemberg",
+          description: "Chopp trincando de gelado acompanhado de 8 coxinhas artesanais super recheadas.",
+          oldPrice: "R$ 68,00",
+          price: "R$ 49,90",
+          badge: "O MAIS PEDIDO",
+          duration: 6,
+          mediaType: "image",
+          image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          id: 2,
+          category: "CAFETERIA & MATINAIS",
+          title: "Cappuccino Cremoso & Pão de Queijo",
+          description: "Cappuccino especial com cacau e canela + pão de queijo quentinho recheado.",
+          oldPrice: "R$ 33,80",
+          price: "R$ 28,90",
+          badge: "CAFE DA MANHÃ",
+          duration: 6,
+          mediaType: "image",
+          image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          id: 3,
+          category: "DRINKS & COQUETELARIA",
+          title: "Gutemberg Citrus & Gin Tropical",
+          description: "Nossa coquetelaria autoral com frutas frescas, xaropes artesanais e especiarias.",
+          oldPrice: "R$ 45,00",
+          price: "R$ 32,90",
+          badge: "HAPPY HOUR",
+          duration: 6,
+          mediaType: "image",
+          image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          id: 4,
+          category: "BISTRÔ & ALMOÇO",
+          title: "Prato Executivo Gourmet",
+          description: "Cortes nobres com acompanhamentos frescos preparados na hora pelo nosso chef.",
+          oldPrice: "",
+          price: "R$ 36,90",
+          badge: "ALMOÇO EXECUTIVO",
+          duration: 6,
+          mediaType: "image",
+          image: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80"
+        }
+      ]
+    };
+
+    let currentSlideIndex = 0;
+    let slideTimer = null;
+    let isPaused = false;
+    let selectedTextKey = null;
+    let selectedTextElement = null;
+    let resumePlaybackAfterEditing = false;
+
+    function normalizeLabel(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().replace(/&/g, ' e ').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
+    }
+
+    function normalizeCategoryName(value) {
+      const normalized = normalizeLabel(value);
+      const aliases = [
+        { match: /^(choperia|choperia e petiscos|choperia e petisco)$/, category: DEFAULT_CATEGORIES[0] },
+        { match: /^(drinks|drinks e coquetelaria|drink e coquetelaria)$/, category: DEFAULT_CATEGORIES[1] },
+        { match: /^(cafeteria|cafeterias|cafeteria e matinais|cafeterias e matinais|cafe e matinais)$/, category: DEFAULT_CATEGORIES[2] },
+        { match: /^(bistro|bistro e almoco)$/, category: DEFAULT_CATEGORIES[3] }
+      ];
+      return aliases.find(alias => alias.match.test(normalized))?.category
+        || DEFAULT_CATEGORIES.find(category => normalizeLabel(category) === normalized)
+        || String(value || '').trim();
+    }
+
+    function normalizeBadgeName(value) {
+      const normalized = normalizeLabel(value);
+      const aliases = [
+        { match: /^(o mais pedido|mais pedido|mais vendido)$/, index: 0 },
+        { match: /^happy hour$/, index: 1 },
+        { match: /^almoco executivo$/, index: 2 },
+        { match: /^(cafe da manha|cafe da manha especial)$/, index: 3 },
+        { match: /^novidade$/, index: 4 },
+        { match: /^(promocao|super oferta)$/, index: 5 }
+      ];
+      const alias = aliases.find(entry => entry.match.test(normalized));
+      return alias ? DEFAULT_BADGES[alias.index].name : String(value || '').trim();
+    }
+
+    // INICIALIZAÇÃO
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStoreData();
+      storeData.serviceLabel = storeData.serviceLabel || "Bistrô • Choperia • Café";
+      storeData.promoLabel = storeData.promoLabel || "Promoções e destaques";
+      storeData.emptyMessages = {
+        items: "Nenhum item cadastrado. Adicione itens no painel lateral.",
+        featured: "Marque produtos como destaque no Cardápio para exibi-los aqui.",
+        extraInfo: "Informativos, eventos e avaliações aparecerão aqui.",
+        media: "Adicione uma imagem ou vídeo",
+        ...storeData.emptyMessages
+      };
+      storeData.textStyles = storeData.textStyles || {};
+      storeData.items = Array.isArray(storeData.items) ? storeData.items : [];
+      storeData.items.forEach(item => {
+        if (String(item.image || '').startsWith('https://images.unsplash.com/photo-1538488881522-4326c3619585')) {
+          item.image = "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80";
+        }
+        item.category = normalizeCategoryName(item.category);
+      });
+      storeData.categories = Array.isArray(storeData.categories) ? storeData.categories : [];
+      storeData.categories = [...new Set([
+        ...DEFAULT_CATEGORIES,
+        ...storeData.categories.map(normalizeCategoryName),
+        ...storeData.items.map(item => item.category).filter(Boolean)
+      ])];
+      storeData.customBadges = Array.isArray(storeData.customBadges) ? storeData.customBadges : [];
+      storeData.items.forEach((item, index) => {
+        if (typeof item.isPromotional !== 'boolean') item.isPromotional = index < 3;
+        item.badgeId = item.badgeId || '';
+        item.badge = normalizeBadgeName(item.badge);
+        if (!item.badgeColor) {
+          const preset = DEFAULT_BADGES.find(badge => badge.name.toLocaleLowerCase() === String(item.badge).toLocaleLowerCase());
+          item.badgeColor = preset?.color || DEFAULT_BADGES[0].color;
+        }
+      });
+      storeData.news = Array.isArray(storeData.news) ? storeData.news : [];
+      storeData.reviews = Array.isArray(storeData.reviews) ? storeData.reviews : [];
+      storeData.events = Array.isArray(storeData.events) ? storeData.events : [];
+      storeData.partners = Array.isArray(storeData.partners) ? storeData.partners : [];
+      storeData.customFonts = Array.isArray(storeData.customFonts) ? storeData.customFonts : [];
+      if (storeData.logo) {
+        storeData.smallLogo = storeData.smallLogo || storeData.logo;
+        storeData.largeLogo = storeData.largeLogo || storeData.logo;
+        delete storeData.logo;
+      }
+      storeData.textStyles['brand-title'] = storeData.textStyles['brand-title'] || {
+        font: storeData.font,
+        size: storeData.brandSize,
+        align: storeData.brandAlign
+      };
+      loadCustomFonts();
+      renderCustomFontList();
+      populateBrandFontOptions();
+      document.getElementById('input-brand-name').value = storeData.name;
+      document.getElementById('input-brand-subtitle').value = storeData.subtitle;
+      document.getElementById('input-brand-slogan').value = storeData.slogan;
+      document.getElementById('input-service-label').value = storeData.serviceLabel;
+      document.getElementById('input-promo-label').value = storeData.promoLabel;
+      document.getElementById('input-brand-font').value = storeData.font;
+      document.getElementById('input-brand-size').value = storeData.brandSize;
+      document.getElementById('input-brand-align').value = storeData.brandAlign;
+      document.getElementById('input-editable-text').value = '';
+      document.getElementById('input-color-gold').value = storeData.goldColor;
+      document.getElementById('input-color-bg').value = storeData.bgColor;
+      document.getElementById('input-slide-timer').value = storeData.slideTimerSec;
+      document.getElementById('input-video-natural').checked = storeData.respectVideoDuration;
+      document.getElementById('input-google-reviews').value = storeData.googleReviewsUrl;
+      document.getElementById('input-positive-only').checked = storeData.positiveOnly;
+      document.getElementById('input-marquee-text').value = storeData.marqueeText;
+      updateGoogleReviews();
+      renderItemsEditor();
+      renderCustomBadges();
+      renderContentEditors();
+      updateBrandInfo();
+      updateScreenLabels();
+      updateBrandStyle();
+      updateLogoPreview();
+      updateColors();
+      updateMarqueeText();
+      renderCurrentSlide();
+      setupTextEditing();
+    });
+
+    // TROCA DE ABAS NO PAINEL
+    function switchTab(tab) {
+      const plusTabs = ['marquee', 'featured', 'reviews', 'events', 'news'];
+      const selectedPlusTab = tab === 'plus' ? 'news' : tab;
+      const inPlus = plusTabs.includes(selectedPlusTab);
+      ['brand', 'items', 'plus', 'partners'].forEach(name => {
+        const button = document.getElementById(`tab-btn-${name}`);
+        const active = name === (inPlus ? 'plus' : tab);
+        document.getElementById(`tab-content-${name}`).classList.toggle('hidden', !active);
+        button.className = active
+          ? "flex-1 min-w-[82px] py-2 rounded text-center bg-brandGold text-black font-bold transition"
+          : "flex-1 min-w-[82px] py-2 rounded text-center text-gray-400 hover:text-white transition";
+      });
+      plusTabs.forEach(name => {
+        document.getElementById(`tab-content-${name}`).classList.toggle('hidden', !inPlus || name !== selectedPlusTab);
+        const button = document.getElementById(`plus-tab-btn-${name}`);
+        button.className = name === selectedPlusTab
+          ? 'rounded px-3 py-2 font-bold bg-brandGold text-black'
+          : 'rounded px-3 py-2 font-bold text-gray-400 hover:text-white';
+      });
+    }
+
+    // ATUALIZA INFORMAÇÕES DA MARCA
+    function updateBrandInfo() {
+      storeData.name = document.getElementById('input-brand-name').value;
+      storeData.subtitle = document.getElementById('input-brand-subtitle').value;
+      storeData.slogan = document.getElementById('input-brand-slogan').value;
+
+      document.getElementById('tv-brand-title').innerText = storeData.name || "GUTEMBERG";
+      document.getElementById('tv-brand-subtitle').innerText = storeData.subtitle || "Lounge";
+      document.getElementById('tv-brand-slogan').innerText = storeData.slogan || "";
+      applyStoredTextStyles(document.getElementById('tv-screen'));
+      saveStoreData();
+    }
+
+    function updateScreenLabels() {
+      storeData.serviceLabel = document.getElementById('input-service-label').value;
+      storeData.promoLabel = document.getElementById('input-promo-label').value;
+      document.getElementById('tv-service-label').innerText = storeData.serviceLabel;
+      document.getElementById('tv-promo-label').innerText = storeData.promoLabel;
+      saveStoreData();
+    }
+
+    function updateBrandStyle() {
+      const selectedFont = document.getElementById('input-brand-font').value;
+      if (selectedFont === '__add_font__' || !selectedTextKey) return;
+      const style = {
+        font: selectedFont,
+        size: Math.max(8, Math.min(96, Number(document.getElementById('input-brand-size').value) || 30)),
+        align: document.getElementById('input-brand-align').value
+      };
+      storeData.textStyles[selectedTextKey] = style;
+      applyTextStyle(selectedTextKey, style);
+      if (selectedTextKey === 'brand-title') {
+        storeData.font = style.font;
+        storeData.brandSize = style.size;
+        storeData.brandAlign = style.align;
+      }
+      updateTextAlignIcon(style.align);
+      saveStoreData();
+    }
+
+    function setupTextEditing() {
+      document.getElementById('tv-screen').addEventListener('click', async event => {
+        const target = event.target.closest('[data-editable-text]');
+        if (!target || !target.textContent.trim()) return;
+        selectedTextKey = target.dataset.editableText;
+        selectedTextElement = target;
+        if (!isPaused) {
+          resumePlaybackAfterEditing = true;
+          togglePause();
+        }
+        if (document.fullscreenElement === document.getElementById('tv-screen')) {
+          try {
+            await document.exitFullscreen();
+          } catch {
+            const status = document.getElementById('save-status');
+            status.innerText = 'Saia da tela cheia para editar o texto';
+            status.className = 'hidden sm:inline text-[10px] text-amber-300';
+            return;
+          }
+        }
+        showTextEditor(target);
+      });
+    }
+
+    function showTextEditor(element) {
+      const toolbar = document.getElementById('quick-text-editor');
+      toolbar.classList.remove('hidden');
+      toolbar.classList.add('flex');
+      document.getElementById('input-editable-text').value = element.textContent.trim();
+      const style = storeData.textStyles[selectedTextKey];
+      const computed = getComputedStyle(element);
+      const font = style?.font || computed.fontFamily.replace(/["']/g, '').split(',')[0].trim();
+      const fontSelect = document.getElementById('input-brand-font');
+      if ([...fontSelect.options].some(option => option.value === font)) {
+        fontSelect.value = font;
+      } else if (style?.font && !fontSelect.querySelector(`option[value="${CSS.escape(style.font)}"]`)) {
+        fontSelect.value = storeData.font;
+      }
+      document.getElementById('input-brand-size').value = style?.size || Math.round(parseFloat(computed.fontSize)) || 30;
+      const align = style?.align || computed.textAlign;
+      const normalizedAlign = ['center', 'right'].includes(align) ? align : 'left';
+      document.getElementById('input-brand-align').value = normalizedAlign;
+      updateTextAlignIcon(normalizedAlign);
+    }
+
+    function updateSelectedTextContent(value) {
+      if (!selectedTextKey) return;
+      const key = selectedTextKey;
+      document.querySelectorAll(`#tv-screen [data-editable-text="${CSS.escape(key)}"]`).forEach(element => {
+        element.textContent = value;
+      });
+
+      if (key === 'brand-title') {
+        storeData.name = value;
+        document.getElementById('input-brand-name').value = value;
+      } else if (key === 'brand-subtitle') {
+        storeData.subtitle = value;
+        document.getElementById('input-brand-subtitle').value = value;
+      } else if (key === 'brand-slogan') {
+        storeData.slogan = value;
+        document.getElementById('input-brand-slogan').value = value;
+      } else if (key === 'service-label') {
+        storeData.serviceLabel = value;
+        document.getElementById('input-service-label').value = value;
+      } else if (key === 'promo-label') {
+        storeData.promoLabel = value;
+        document.getElementById('input-promo-label').value = value;
+      } else if (key === 'marquee') {
+        storeData.marqueeText = value;
+        document.getElementById('input-marquee-text').value = value;
+      } else if (key === 'media-empty-message') {
+        storeData.emptyMessages.media = value;
+      } else {
+        updateStoredTextField(key, value);
+      }
+      saveStoreData();
+    }
+
+    function updateStoredTextField(key, value) {
+      const itemMatch = key.match(/^(?:item|featured)-(.+)-(badge|category|title|description|old-price|price)$/);
+      if (itemMatch) {
+        const [, itemId, rawField] = itemMatch;
+        const item = storeData.items.find(entry => String(entry.id) === itemId);
+        if (item) {
+          const field = rawField === 'old-price' ? 'oldPrice' : rawField;
+          item[field] = value;
+          if (field === 'category' && value.trim() && !storeData.categories.includes(value.trim())) {
+            storeData.categories.push(value.trim());
+            renderItemsEditor();
+          }
+          const index = storeData.items.indexOf(item);
+          const editor = document.querySelector(`#items-editor-container [data-item-index="${index}"] [data-item-field="${field}"]`);
+          if (editor) editor.value = value;
+        }
+        return;
+      }
+
+      const contentMatch = key.match(/^(news|event|review|partner)-(\d+)-(.+)$/);
+      if (!contentMatch) {
+        const emptyMatch = key.match(/^(items|featured|extraInfo)-empty-message$/);
+        if (emptyMatch) {
+          storeData.emptyMessages[emptyMatch[1]] = value;
+        }
+        return;
+      }
+      const [, type, indexText, field] = contentMatch;
+      const index = Number(indexText);
+      const collectionName = { event: 'events', review: 'reviews', partner: 'partners', news: 'news' }[type];
+      const entry = storeData[collectionName]?.[index];
+      if (!entry) return;
+      if (type === 'review' && field === 'stars') {
+        entry.stars = Math.max(1, Math.min(5, (value.match(/★/g) || []).length || Number(value) || 1));
+      } else if (type === 'event' && field === 'details') {
+        const [time, ...social] = value.split(' ');
+        entry.time = time || '';
+        entry.social = social.join(' ');
+      } else if (type === 'partner' && field === 'details') {
+        const [address, ...phone] = value.split(' · ');
+        entry.address = address || '';
+        entry.phone = phone.join(' · ');
+      } else if (field in entry) {
+        entry[field] = value;
+      }
+      const panelField = document.querySelector(`[data-content-type="${type}"][data-content-index="${index}"][data-content-field="${field}"]`);
+      if (panelField) panelField.value = field === 'stars' ? entry.stars : value;
+    }
+
+    function hideTextEditor() {
+      const toolbar = document.getElementById('quick-text-editor');
+      toolbar.classList.add('hidden');
+      toolbar.classList.remove('flex');
+      selectedTextKey = null;
+      selectedTextElement = null;
+      document.getElementById('input-editable-text').value = '';
+      if (resumePlaybackAfterEditing) {
+        resumePlaybackAfterEditing = false;
+        togglePause();
+      }
+    }
+
+    function updateTextAlignIcon(align) {
+      const icon = document.getElementById('brand-align-icon');
+      icon.className = `fa-solid fa-align-${align === 'center' ? 'center' : align === 'right' ? 'right' : 'left'} text-[10px] text-gray-500`;
+    }
+
+    function applyTextStyle(key, style) {
+      document.querySelectorAll('#tv-screen [data-editable-text]').forEach(element => {
+        if (element.dataset.editableText !== key) return;
+        element.style.fontFamily = `'${style.font}', sans-serif`;
+        element.style.fontSize = `${style.size}px`;
+        element.style.textAlign = style.align;
+      });
+    }
+
+    function applyStoredTextStyles(root) {
+      Object.entries(storeData.textStyles).forEach(([key, style]) => {
+        root.querySelectorAll('[data-editable-text]').forEach(element => {
+          if (element.dataset.editableText === key) {
+            element.style.fontFamily = `'${style.font}', sans-serif`;
+            element.style.fontSize = `${style.size}px`;
+            element.style.textAlign = style.align;
+          }
+        });
+      });
+      if (selectedTextKey) {
+        selectedTextElement = [...document.querySelectorAll('#tv-screen [data-editable-text]')]
+          .find(element => element.dataset.editableText === selectedTextKey) || null;
+        if (!selectedTextElement) hideTextEditor();
+      }
+    }
+
+    function handleBrandFontChange() {
+      const select = document.getElementById('input-brand-font');
+      if (select.value === '__add_font__') {
+        const selectedStyle = selectedTextKey && storeData.textStyles[selectedTextKey];
+        select.value = selectedStyle?.font || (selectedTextKey === 'brand-title' ? storeData.font : 'Cinzel');
+        document.getElementById('input-custom-font').click();
+        return;
+      }
+      updateBrandStyle();
+    }
+
+    function uploadLogo(target, event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Selecione um arquivo de imagem para o logotipo.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        storeData[target] = reader.result;
+        updateLogoPreview();
+        saveStoreData();
+      };
+      reader.onerror = () => alert('Não foi possível ler o arquivo do logotipo.');
+      reader.readAsDataURL(file);
+    }
+
+    function removeLogo(target) {
+      storeData[target] = "";
+      updateLogoPreview();
+      saveStoreData();
+    }
+
+    function updateLogoPreview() {
+      const logo = document.getElementById('tv-brand-logo');
+      const featuredLogo = document.getElementById('tv-featured-logo');
+      const smallThumb = document.getElementById('small-logo-thumb');
+      const largeThumb = document.getElementById('large-logo-thumb');
+      logo.classList.toggle('hidden', !storeData.smallLogo);
+      document.getElementById('tv-featured-logo-wrap').classList.toggle('hidden', !storeData.largeLogo);
+      smallThumb.classList.toggle('hidden', !storeData.smallLogo);
+      largeThumb.classList.toggle('hidden', !storeData.largeLogo);
+      logo.src = storeData.smallLogo || "";
+      smallThumb.src = storeData.smallLogo || "";
+      featuredLogo.src = storeData.largeLogo || "";
+      largeThumb.src = storeData.largeLogo || "";
+    }
+
+    function fontFamilyFromFile(fileName) {
+      const baseName = fileName.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_-]+/g, ' ').trim();
+      return `Personalizada ${baseName || 'Fonte'}`;
+    }
+
+    function populateBrandFontOptions() {
+      const select = document.getElementById('input-brand-font');
+      select.querySelectorAll('option[data-custom-font]').forEach(option => option.remove());
+      const addFontOption = select.querySelector('option[value="__add_font__"]');
+      storeData.customFonts.forEach(font => {
+        const option = document.createElement('option');
+        option.value = font.family;
+        option.textContent = font.family;
+        option.dataset.customFont = 'true';
+        select.insertBefore(option, addFontOption);
+      });
+      if ([...select.options].some(option => option.value === storeData.font)) select.value = storeData.font;
+    }
+
+    async function loadCustomFonts() {
+      for (const font of storeData.customFonts) {
+        try {
+          const installed = new FontFace(font.family, `url("${font.data}")`);
+          await installed.load();
+          document.fonts.add(installed);
+        } catch (error) {
+          console.error(`Não foi possível carregar a fonte ${font.family}.`, error);
+        }
+      }
+    }
+
+    function renderCustomFontList() {
+      const container = document.getElementById('custom-font-list');
+      container.innerHTML = storeData.customFonts.map((font, index) =>
+        `<span class="inline-flex items-center gap-1">${escapeHtml(font.family)}<button type="button" aria-label="Remover fonte ${escapeHtml(font.family)}" title="Remover fonte" onclick="removeCustomFont(${index})" class="text-gray-600 hover:text-red-300">×</button></span>`
+      ).join('');
+    }
+
+    function uploadCustomFont(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!/\.(woff2?|ttf|otf)$/i.test(file.name)) {
+        alert('Use uma fonte .woff2, .woff, .ttf ou .otf.');
+        event.target.value = '';
+        return;
+      }
+      if (file.size > 1500000) {
+        alert('Esta fonte excede 1,5 MB. Escolha uma versão menor para salvar no navegador.');
+        event.target.value = '';
+        return;
+      }
+      const family = fontFamilyFromFile(file.name);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const data = String(reader.result);
+          const installed = new FontFace(family, `url("${data}")`);
+          await installed.load();
+          document.fonts.add(installed);
+          storeData.customFonts = storeData.customFonts.filter(font => font.family !== family);
+          storeData.customFonts.push({ family, data });
+          populateBrandFontOptions();
+          renderCustomFontList();
+          document.getElementById('input-brand-font').value = family;
+          updateBrandStyle();
+          saveStoreData();
+        } catch (error) {
+          console.error('Não foi possível instalar a fonte selecionada.', error);
+          alert('O arquivo não pôde ser carregado como fonte. Verifique o formato do arquivo.');
+        }
+        event.target.value = '';
+      };
+      reader.onerror = () => {
+        alert('Não foi possível ler o arquivo da fonte.');
+        event.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeCustomFont(index) {
+      const [font] = storeData.customFonts.splice(index, 1);
+      if (font) {
+        Object.values(storeData.textStyles).forEach(style => {
+          if (style.font === font.family) style.font = 'Cinzel';
+        });
+        if (storeData.font === font.family) storeData.font = 'Cinzel';
+        if (selectedTextKey && storeData.textStyles[selectedTextKey]) {
+          document.getElementById('input-brand-font').value = storeData.textStyles[selectedTextKey].font;
+          updateBrandStyle();
+        } else {
+          applyStoredTextStyles(document.getElementById('tv-screen'));
+          saveStoreData();
+        }
+      }
+      populateBrandFontOptions();
+      renderCustomFontList();
+      saveStoreData();
+    }
+
+    function loadStoreData() {
+      try {
+        const saved = localStorage.getItem('gutemberg-tv-config');
+        if (saved) storeData = { ...storeData, ...JSON.parse(saved) };
+      } catch (error) {
+        console.error('Não foi possível carregar as configurações salvas.', error);
+      }
+    }
+
+    function saveStoreData() {
+      storeData.slideTimerSec = Math.max(3, Math.min(60, Number(document.getElementById('input-slide-timer')?.value) || storeData.slideTimerSec));
+      storeData.respectVideoDuration = document.getElementById('input-video-natural')?.checked ?? storeData.respectVideoDuration;
+      storeData.positiveOnly = document.getElementById('input-positive-only')?.checked ?? storeData.positiveOnly;
+      try {
+        localStorage.setItem('gutemberg-tv-config', JSON.stringify(storeData));
+        const status = document.getElementById('save-status');
+        if (status) {
+          status.innerText = 'Salvo neste navegador';
+          status.className = 'hidden sm:inline text-[10px] text-gray-400';
+        }
+      } catch (error) {
+        console.error('Não foi possível salvar as configurações. O armazenamento do navegador pode estar cheio.', error);
+        const status = document.getElementById('save-status');
+        if (status) {
+          status.innerText = 'Armazenamento cheio — use arquivos menores ou URLs';
+          status.className = 'hidden sm:inline text-[10px] text-red-400';
+        }
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[character]);
+    }
+
+    function safeMediaUrl(value) {
+      const url = String(value || '').trim();
+      return /^(https?:\/\/|data:image\/|data:video\/|blob:)/i.test(url) ? url : '';
+    }
+
+    function resolveImportedCategory(value) {
+      const normalized = normalizeLabel(value);
+      if (/(choperia|petisco)/.test(normalized)) return DEFAULT_CATEGORIES[0];
+      if (/(drink|coquetel)/.test(normalized)) return DEFAULT_CATEGORIES[1];
+      if (/(cafeteria|matinal|cafe)/.test(normalized)) return DEFAULT_CATEGORIES[2];
+      if (/(bistro|almoco)/.test(normalized)) return DEFAULT_CATEGORIES[3];
+      return storeData.categories.find(category => normalizeLabel(category) === normalized) || String(value || '').trim();
+    }
+
+    function parseMenuText(text, promotional) {
+      const products = [];
+      let category = DEFAULT_CATEGORIES[0];
+      const pricePattern = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{2}))/gi;
+
+      String(text || '').split(/\r?\n/).forEach(line => {
+        const content = line.trim();
+        if (!content) return;
+        const categoryHeader = content.match(/^\[(.+)]$/);
+        if (categoryHeader) {
+          category = resolveImportedCategory(categoryHeader[1]);
+          return;
+        }
+
+        const prices = [...content.matchAll(pricePattern)];
+        if (!prices.length) return;
+        const priceMatch = prices[prices.length - 1];
+        const beforePrice = content.slice(0, priceMatch.index).trim().replace(/[-–—|:]\s*$/, '').trim();
+        const fields = beforePrice.split(/\t+|\s+[-–—|]\s+/).map(field => field.trim()).filter(Boolean);
+        const title = fields.shift();
+        if (!title) return;
+        const amount = priceMatch[1].replace(/\./g, '').replace(',', '.');
+        const currentPrice = Number(amount);
+        if (!Number.isFinite(currentPrice)) return;
+        const previousPrice = prices.length > 1
+          ? Number(prices[prices.length - 2][1].replace(/\./g, '').replace(',', '.'))
+          : 0;
+        products.push({
+          category,
+          title,
+          description: fields.join(' - '),
+          oldPrice: previousPrice ? `R$ ${previousPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '',
+          price: `R$ ${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          badge: '',
+          badgeColor: DEFAULT_BADGES[0].color,
+          badgeId: '',
+          isPromotional: promotional,
+          duration: storeData.slideTimerSec,
+          mediaType: 'image',
+          image: '',
+          id: Date.now() + Math.floor(Math.random() * 1000000) + products.length
+        });
+      });
+      return products;
+    }
+
+    function importMenuText() {
+      const input = document.getElementById('menu-import-text');
+      const status = document.getElementById('menu-import-status');
+      const imported = parseMenuText(input.value, document.getElementById('menu-import-promotional').checked);
+      if (!imported.length) {
+        status.innerText = 'Nenhum produto válido encontrado. Inclua nome, preço e, se quiser, descrição.';
+        status.className = 'text-[10px] text-amber-300';
+        return;
+      }
+
+      const newCategories = new Set();
+      imported.forEach(item => {
+        item.category = resolveImportedCategory(item.category);
+        if (!storeData.categories.some(category => normalizeLabel(category) === normalizeLabel(item.category))) {
+          storeData.categories.push(item.category);
+          newCategories.add(item.category);
+        }
+      });
+      const firstImportedPromotional = imported.find(item => item.isPromotional);
+      storeData.items.push(...imported);
+      if (firstImportedPromotional) {
+        currentSlideIndex = getSlideshowItems().findIndex(item => item.id === firstImportedPromotional.id);
+      }
+      renderItemsEditor();
+      renderCurrentSlide();
+      saveStoreData();
+      input.value = '';
+      const promotionMessage = firstImportedPromotional ? ' Os destaques foram adicionados ao player.' : ' Marque os produtos como promocionais para exibi-los no player.';
+      status.innerText = `${imported.length} produto(s) importado(s), ${newCategories.size} categoria(s) nova(s).${promotionMessage}`;
+      status.className = 'text-[10px] text-green-400';
+    }
+
+    // ATUALIZA CORES DA TV
+    function updateColors() {
+      storeData.goldColor = document.getElementById('input-color-gold').value;
+      storeData.bgColor = document.getElementById('input-color-bg').value;
+
+      document.getElementById('label-color-gold').innerText = storeData.goldColor.toUpperCase();
+      document.getElementById('label-color-bg').innerText = storeData.bgColor.toUpperCase();
+
+      document.documentElement.style.setProperty('--primary-gold', storeData.goldColor);
+      document.getElementById('tv-screen').style.backgroundColor = storeData.bgColor;
+
+      // Atualiza elementos com cor dourada
+      const goldElements = document.querySelectorAll('.text-brandGold');
+      goldElements.forEach(el => el.style.color = storeData.goldColor);
+      saveStoreData();
+    }
+
+    // ATUALIZA MARQUEE (RODAPÉ)
+    function updateMarqueeText() {
+      storeData.marqueeText = document.getElementById('input-marquee-text').value;
+      document.getElementById('tv-marquee-1').innerText = storeData.marqueeText;
+      document.getElementById('tv-marquee-2').innerText = storeData.marqueeText;
+      saveStoreData();
+    }
+
+    function promptNewCategory() {
+      const input = document.getElementById('new-category-name');
+      const category = input.value.trim();
+      if (!category) {
+        const status = document.getElementById('category-status');
+        status.innerText = 'Digite o nome da categoria antes de adicionar.';
+        status.className = 'mt-1 min-h-4 text-[10px] text-amber-300';
+        input.focus();
+        return;
+      }
+      if (storeData.categories.some(existing => existing.toLocaleLowerCase() === category.toLocaleLowerCase())) {
+        const status = document.getElementById('category-status');
+        status.innerText = 'Essa categoria já está cadastrada.';
+        status.className = 'mt-1 min-h-4 text-[10px] text-amber-300';
+        input.focus();
+        return;
+      }
+      storeData.categories.push(category);
+      input.value = '';
+      const status = document.getElementById('category-status');
+      status.innerText = `Categoria "${category}" adicionada.`;
+      status.className = 'mt-1 min-h-4 text-[10px] text-green-400';
+      saveStoreData();
+      renderItemsEditor();
+    }
+
+    function renderCategoryManager() {
+      const container = document.getElementById('category-editor-list');
+      const customCategories = storeData.categories.filter(category => !isDefaultCategory(category));
+      container.innerHTML = customCategories.map((category, index) => {
+        const usedBy = storeData.items.filter(item => item.category === category).length;
+        return `<div class="flex flex-wrap items-center gap-2 rounded border border-gray-800 bg-[#111114] p-2">
+          <input type="text" value="${escapeHtml(category)}" aria-label="Nome da categoria ${escapeHtml(category)}" class="min-w-0 flex-1 rounded border border-gray-700 bg-[#181818] px-2 py-1 text-xs text-white">
+          <button type="button" onclick="renameCategory(${index},this.previousElementSibling.value)" class="rounded bg-gray-800 px-2 py-1 text-[10px] hover:bg-gray-700">Salvar</button>
+          <button type="button" onclick="deleteCategory(${index})" ${usedBy ? 'disabled title="Mova os itens para outra categoria antes de excluir"' : ''} class="rounded bg-red-950/60 px-2 py-1 text-[10px] text-red-300 enabled:hover:bg-red-900 disabled:cursor-not-allowed disabled:opacity-40">Excluir${usedBy ? ` (${usedBy})` : ''}</button>
+        </div>`;
+      }).join('') || '<p class="text-[10px] text-gray-500">Nenhuma categoria personalizada.</p>';
+    }
+
+    function isDefaultCategory(category) {
+      return DEFAULT_CATEGORIES.some(defaultCategory => defaultCategory.toLocaleLowerCase() === String(category).toLocaleLowerCase());
+    }
+
+    function renameCategory(customIndex, nextName) {
+      const customCategories = storeData.categories.filter(category => !isDefaultCategory(category));
+      const currentName = customCategories[customIndex];
+      const category = nextName.trim();
+      const status = document.getElementById('category-status');
+      if (!currentName || !category) {
+        status.innerText = 'O nome da categoria não pode ficar vazio.';
+        status.className = 'min-h-4 text-[10px] text-amber-300';
+        return;
+      }
+      if (storeData.categories.some(existing => existing !== currentName && existing.toLocaleLowerCase() === category.toLocaleLowerCase())) {
+        status.innerText = 'Já existe uma categoria com esse nome.';
+        status.className = 'min-h-4 text-[10px] text-amber-300';
+        return;
+      }
+      storeData.categories = storeData.categories.map(existing => existing === currentName ? category : existing);
+      storeData.items.forEach(item => {
+        if (item.category === currentName) item.category = category;
+      });
+      status.innerText = `Categoria renomeada para "${category}".`;
+      status.className = 'min-h-4 text-[10px] text-green-400';
+      renderItemsEditor();
+      renderCurrentSlide();
+      saveStoreData();
+    }
+
+    function deleteCategory(customIndex) {
+      const customCategories = storeData.categories.filter(category => !isDefaultCategory(category));
+      const category = customCategories[customIndex];
+      const status = document.getElementById('category-status');
+      if (!category) return;
+      if (storeData.items.some(item => item.category === category)) {
+        status.innerText = 'Mova os itens desta categoria para outra antes de excluí-la.';
+        status.className = 'min-h-4 text-[10px] text-amber-300';
+        return;
+      }
+      storeData.categories = storeData.categories.filter(existing => existing !== category);
+      status.innerText = `Categoria "${category}" excluída.`;
+      status.className = 'min-h-4 text-[10px] text-green-400';
+      renderItemsEditor();
+      saveStoreData();
+    }
+
+    function addCustomBadge() {
+      const nameInput = document.getElementById('new-badge-name');
+      const name = nameInput.value.trim();
+      const color = document.getElementById('new-badge-color').value;
+      if (!name) {
+        nameInput.focus();
+        return;
+      }
+      if ([...DEFAULT_BADGES, ...storeData.customBadges].some(badge => badge.name.toLocaleLowerCase() === name.toLocaleLowerCase())) {
+        nameInput.focus();
+        return;
+      }
+      storeData.customBadges.push({ id: `badge-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, name, color });
+      nameInput.value = '';
+      renderCustomBadges();
+      renderItemsEditor();
+      saveStoreData();
+    }
+
+    function updateCustomBadge(index, field, value) {
+      const badge = storeData.customBadges[index];
+      if (!badge) return;
+      badge[field] = value;
+      storeData.items.forEach(item => {
+        if (item.badgeId === badge.id) {
+          item.badge = badge.name;
+          item.badgeColor = badge.color;
+        }
+      });
+      renderItemsEditor();
+      renderCurrentSlide();
+      saveStoreData();
+    }
+
+    function removeCustomBadge(index) {
+      const [badge] = storeData.customBadges.splice(index, 1);
+      if (!badge) return;
+      storeData.items.forEach(item => {
+        if (item.badgeId === badge.id) {
+          item.badgeId = '';
+          item.badge = DEFAULT_BADGES[1].name;
+          item.badgeColor = DEFAULT_BADGES[1].color;
+        }
+      });
+      renderCustomBadges();
+      renderItemsEditor();
+      renderCurrentSlide();
+      saveStoreData();
+    }
+
+    function renderCustomBadges() {
+      const container = document.getElementById('custom-badge-list');
+      container.innerHTML = storeData.customBadges.map((badge, index) => `<div class="flex items-center gap-2 rounded border border-gray-800 bg-[#111114] p-2">
+        <input type="text" value="${escapeHtml(badge.name)}" aria-label="Nome do selo personalizado" onchange="updateCustomBadge(${index},'name',this.value)" class="min-w-0 flex-1 rounded border border-gray-700 bg-[#181818] px-2 py-1 text-xs text-white">
+        <input type="color" value="${escapeHtml(badge.color)}" aria-label="Cor do selo personalizado" onchange="updateCustomBadge(${index},'color',this.value)" class="h-7 w-9 cursor-pointer rounded bg-[#181818]">
+        <button type="button" onclick="removeCustomBadge(${index})" class="rounded bg-red-950/60 px-2 py-1 text-[10px] text-red-300">Excluir</button>
+      </div>`).join('') || '<p class="text-[10px] text-gray-500">Nenhum selo personalizado.</p>';
+    }
+
+    const contentFields = {
+      news: [{ key: 'title', label: 'Título' }, { key: 'subtitle', label: 'Subtítulo' }],
+      reviews: [{ key: 'name', label: 'Nome do cliente' }, { key: 'stars', label: 'Estrelas (1 a 5)', type: 'number' }, { key: 'comment', label: 'Comentário' }, { key: 'media', label: 'Imagem / print do comentário', type: 'media' }],
+      events: [{ key: 'name', label: 'Nome do evento ou grupo' }, { key: 'time', label: 'Horário de início' }, { key: 'social', label: 'Redes sociais' }, { key: 'media', label: 'Flyer do evento', type: 'media' }],
+      partners: [{ key: 'name', label: 'Nome do comércio' }, { key: 'address', label: 'Endereço' }, { key: 'phone', label: 'Telefone' }, { key: 'media', label: 'Imagem / vídeo', type: 'media' }]
+    };
+
+    function renderContentEditors() {
+      Object.keys(contentFields).forEach(type => {
+        const container = document.getElementById(`${type}-editor`);
+        container.innerHTML = '';
+        storeData[type].forEach((entry, index) => {
+          const card = document.createElement('div');
+          card.className = 'rounded-lg border border-gray-800 bg-black p-3 space-y-2';
+          card.innerHTML = `<div class="flex justify-between border-b border-gray-800 pb-2"><strong class="text-xs text-brandGold">${escapeHtml(entry.name || entry.title || `${type} ${index + 1}`)}</strong><button onclick="removeContent('${type}',${index})" class="text-xs text-red-300">Excluir</button></div>` +
+            contentFields[type].map(field => {
+              const value = escapeHtml(entry[field.key] || '');
+              const fieldData = `data-content-type="${type}" data-content-index="${index}" data-content-field="${field.key}"`;
+              if (field.type === 'media') return `<label class="block text-[10px] text-gray-400">${field.label}<div class="flex gap-2 mt-1"><input ${fieldData} value="${value}" oninput="updateContentField('${type}',${index},'${field.key}',this.value)" placeholder="URL da imagem/vídeo" class="min-w-0 flex-1 bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white"><input type="file" accept="image/*,video/*" onchange="uploadContentMedia('${type}',${index},event)" class="w-24 text-[9px] text-gray-400"></div></label>`;
+              if (field.key === 'comment' || field.key === 'subtitle') return `<label class="block text-[10px] text-gray-400">${field.label}<textarea ${fieldData} rows="2" oninput="updateContentField('${type}',${index},'${field.key}',this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white">${value}</textarea></label>`;
+              return `<label class="block text-[10px] text-gray-400">${field.label}<input ${fieldData} type="${field.type || 'text'}" ${field.type === 'number' ? 'min="1" max="5"' : ''} value="${value}" oninput="updateContentField('${type}',${index},'${field.key}',this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white"></label>`;
+            }).join('');
+          container.appendChild(card);
+        });
+      });
+      renderFeaturedPanel();
+    }
+
+    function addContent(type) {
+      const defaults = {
+        news: { title: 'Novo informativo', subtitle: 'Adicione os detalhes desta informação.' },
+        reviews: { name: 'Cliente', stars: 5, comment: '', media: '' },
+        events: { name: 'Novo evento', time: '', social: '', media: '' },
+        partners: { name: 'Novo parceiro', address: '', phone: '', media: '' }
+      };
+      storeData[type].push(defaults[type]);
+      renderContentEditors();
+      saveStoreData();
+    }
+
+    function updateContentField(type, index, key, value) {
+      storeData[type][index][key] = key === 'stars' ? Math.max(1, Math.min(5, Number(value) || 1)) : value;
+      saveStoreData();
+      renderFeaturedPanel();
+    }
+
+    function uploadContentMedia(type, index, event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        storeData[type][index].media = reader.result;
+        renderContentEditors();
+        saveStoreData();
+      };
+      reader.onerror = () => alert('Não foi possível ler o arquivo selecionado.');
+      reader.readAsDataURL(file);
+    }
+
+    function removeContent(type, index) {
+      storeData[type].splice(index, 1);
+      const stylePrefix = { news: 'news', reviews: 'review', events: 'event', partners: 'partner' }[type];
+      Object.entries(storeData.textStyles).forEach(([key, style]) => {
+        const match = key.match(new RegExp(`^${stylePrefix}-(\\d+)-`));
+        if (!match) return;
+        const styledIndex = Number(match[1]);
+        if (styledIndex === index) {
+          delete storeData.textStyles[key];
+        } else if (styledIndex > index) {
+          delete storeData.textStyles[key];
+          storeData.textStyles[key.replace(`${stylePrefix}-${styledIndex}-`, `${stylePrefix}-${styledIndex - 1}-`)] = style;
+        }
+      });
+      renderContentEditors();
+      saveStoreData();
+    }
+
+    function updateGoogleReviews() {
+      const input = document.getElementById('input-google-reviews').value.trim();
+      if (input && !/^https?:\/\/\S+/i.test(input)) {
+        document.getElementById('google-review-status').innerText = 'Informe um link válido começando com http:// ou https://.';
+        return;
+      }
+      storeData.googleReviewsUrl = input;
+      document.getElementById('google-review-status').innerText = input
+        ? 'Link salvo. Para importar foto, nota e comentário automaticamente, é necessária uma integração segura com Google Places API.'
+        : 'A importação automática requer Google Places API e uma chave configurada em servidor; o link sozinho não permite buscar avaliações com segurança.';
+      saveStoreData();
+    }
+
+    function getSlideshowItems() {
+      return storeData.items.filter(isPromotionalItem);
+    }
+
+    function isPromotionalItem(item) {
+      const category = normalizeLabel(item.category);
+      return item.isPromotional === true || category.includes('promocao') || category.includes('destaque');
+    }
+
+    function renderFeaturedPanel() {
+      const featured = document.getElementById('tv-featured-list');
+      const featuredItems = storeData.items.filter(isPromotionalItem);
+      const currentSlideId = getSlideshowItems()[currentSlideIndex]?.id;
+      const products = featuredItems.slice(0, 3).map(item => {
+        const isCurrent = item.id === currentSlideId;
+        return `<div data-playing-now="${isCurrent}" class="featured-product-card rounded-lg px-2.5 py-2.5 shadow-sm">
+          <div class="mb-1 flex items-center justify-between gap-2">
+            <span class="min-w-0 font-semibold leading-snug"><span class="mr-1 text-brandGold">•</span><span data-editable-text="featured-${escapeHtml(item.id)}-title">${escapeHtml(item.title)}</span></span>
+            ${isCurrent ? '<span class="shrink-0 rounded-full bg-brandGold px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wide text-black">A passar agora</span>' : ''}
+          </div>
+          <strong data-editable-text="featured-${escapeHtml(item.id)}-price" class="text-sm lg:text-base font-extrabold text-brandGold gold-glow">${escapeHtml(item.price)}</strong>
+        </div>`;
+      }).join('');
+      const news = storeData.news.map((item, index) => `<div class="border-t border-gray-800 pt-2"><strong data-editable-text="news-${index}-title">${escapeHtml(item.title)}</strong><br><span data-editable-text="news-${index}-subtitle">${escapeHtml(item.subtitle)}</span></div>`).join('');
+      const mediaMarkup = (entry, label) => {
+        const url = safeMediaUrl(entry.media);
+        if (!url) return '';
+        const video = /^data:video\//i.test(url) || /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(url);
+        return video
+          ? `<video src="${escapeHtml(url)}" autoplay muted loop playsinline class="mt-1 max-h-16 w-full rounded object-cover"></video>`
+          : `<img src="${escapeHtml(url)}" alt="${escapeHtml(label)}" class="mt-1 max-h-16 w-full rounded object-cover">`;
+      };
+      const events = storeData.events.map((item, index) => `<div class="border-t border-gray-800 pt-2"><strong data-editable-text="event-${index}-name" class="text-brandGold">${escapeHtml(item.name)}</strong><br><span data-editable-text="event-${index}-time">${escapeHtml(item.time)}</span> <span data-editable-text="event-${index}-social">${escapeHtml(item.social)}</span>${mediaMarkup(item, item.name)}</div>`).join('');
+      const reviews = storeData.reviews.map((item, index) => ({ item, index })).filter(({ item }) => !storeData.positiveOnly || Number(item.stars) >= 4).map(({ item, index }) => `<div class="border-t border-gray-800 pt-2"><span data-editable-text="review-${index}-stars" class="text-brandGold">${'★'.repeat(Math.max(1, Math.min(5, Number(item.stars) || 1)))}</span> <span data-editable-text="review-${index}-name">${escapeHtml(item.name)}</span><br><span data-editable-text="review-${index}-comment">${escapeHtml(item.comment)}</span>${mediaMarkup(item, item.name)}</div>`).join('');
+      const partners = storeData.partners.map((item, index) => `<div class="border-t border-gray-800 pt-2"><strong data-editable-text="partner-${index}-name">${escapeHtml(item.name)}</strong><br><span data-editable-text="partner-${index}-address">${escapeHtml(item.address)}</span> · <span data-editable-text="partner-${index}-phone">${escapeHtml(item.phone)}</span>${mediaMarkup(item, item.name)}</div>`).join('');
+      featured.innerHTML = products || `<p data-editable-text="featured-empty-message">${escapeHtml(storeData.emptyMessages.featured)}</p>`;
+      const extraInfo = [news, events, reviews, partners].filter(Boolean).join('');
+      const extraInfoContainer = document.getElementById('tv-extra-info');
+      extraInfoContainer.innerHTML = extraInfo;
+      extraInfoContainer.classList.toggle('hidden', !extraInfo);
+      applyStoredTextStyles(document.getElementById('tv-screen'));
+      saveStoreData();
+    }
+
+    // RENDERIZA O SLIDE ATUAL NA TELA DA TV
+    function renderCurrentSlide() {
+      const slideshowItems = getSlideshowItems();
+      if (slideshowItems.length === 0) {
+        clearInterval(slideTimer);
+        document.getElementById('slide-counter-label').innerText = 'Slide 0 de 0';
+        document.getElementById('tv-slide-stage').innerHTML = `
+          <div class="col-span-12 text-center text-gray-500 py-12">
+            <i class="fa-solid fa-utensils text-4xl mb-3 block"></i>
+            <p data-editable-text="featured-empty-message">${escapeHtml(storeData.emptyMessages.featured)}</p>
+          </div>
+        `;
+        renderFeaturedPanel();
+        startSlideTimer();
+        return;
+      }
+
+      if (currentSlideIndex >= slideshowItems.length) {
+        currentSlideIndex = 0;
+      }
+
+      const item = slideshowItems[currentSlideIndex];
+      document.getElementById('slide-counter-label').innerText = `Slide ${currentSlideIndex + 1} de ${slideshowItems.length}`;
+
+      const stage = document.getElementById('tv-slide-stage');
+      const media = safeMediaUrl(item.image);
+      const isVideo = item.mediaType === 'video' || /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(media);
+      const title = escapeHtml(item.title);
+      const mediaMarkup = media
+        ? isVideo
+          ? `<video id="tv-current-video" src="${escapeHtml(media)}" class="h-full w-full object-cover" autoplay muted playsinline ${storeData.respectVideoDuration ? '' : 'loop'}></video>`
+          : `<img src="${escapeHtml(media)}" alt="${title}" class="ken-burns-image h-full w-full object-cover">`
+        : `<div data-editable-text="media-empty-message" class="w-full h-full flex items-center justify-center text-gray-500">${escapeHtml(storeData.emptyMessages.media)}</div>`;
+      stage.innerHTML = `
+        <div class="col-span-12 relative h-full min-h-0 overflow-hidden rounded-lg border-2 border-brandGold/50 shadow-2xl slide-enter">
+          <div class="absolute inset-0">${mediaMarkup}</div>
+          <div class="pointer-events-none absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.32) 34%,transparent 72%),linear-gradient(90deg,rgba(0,0,0,.28) 0%,transparent 76%);"></div>
+          <div class="absolute top-3 left-3 right-3 z-10 flex items-start justify-between gap-3">
+            <div class="flex max-w-[70%] flex-wrap items-center gap-2 rounded bg-black/75 px-2.5 py-1.5 shadow-lg backdrop-blur-sm">
+              <span data-editable-text="item-${escapeHtml(item.id)}-badge" style="background-color:${escapeHtml(item.badgeColor || DEFAULT_BADGES[0].color)}" class="badge-breathe rounded px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-black">
+                ${escapeHtml(item.badge || 'DESTAQUE')}
+              </span>
+              <span data-editable-text="item-${escapeHtml(item.id)}-category" class="slide-text-enter text-[10px] lg:text-xs font-bold uppercase tracking-widest text-gray-100" style="animation-delay:80ms">
+                ${escapeHtml(item.category || '')}
+              </span>
+            </div>
+            <div class="slide-text-enter shrink-0 scale-[1.04] rounded-lg border border-yellow-200/70 px-3.5 py-2 text-right shadow-[0_4px_24px_rgba(229,168,35,0.32)]" style="background:linear-gradient(135deg,#f8d979 0%,#e5a823 52%,#bd7d08 100%);animation-delay:150ms">
+              ${item.oldPrice ? `<span data-editable-text="item-${escapeHtml(item.id)}-old-price" class="mr-2 text-[10px] text-black/60 line-through">${escapeHtml(item.oldPrice)}</span>` : ''}
+              <span data-editable-text="item-${escapeHtml(item.id)}-price" class="font-brand-title text-xl lg:text-3xl font-extrabold tracking-tight text-black drop-shadow-sm">
+                ${escapeHtml(item.price)}
+              </span>
+            </div>
+          </div>
+          <div class="absolute bottom-3 left-3 right-3 z-10 space-y-1.5">
+            <h2 data-editable-text="item-${escapeHtml(item.id)}-title" class="slide-text-enter w-fit max-w-full border-l-2 border-brandGold pl-3 font-brand-title text-lg lg:text-2xl font-extrabold leading-tight text-white [text-shadow:0_2px_8px_rgba(0,0,0,1)]" style="animation-delay:240ms">
+              ${title}
+            </h2>
+            <p data-editable-text="item-${escapeHtml(item.id)}-description" class="slide-text-enter w-fit max-w-full border-l border-white/50 pl-3 text-[10px] lg:text-xs leading-relaxed text-gray-100 [text-shadow:0_2px_6px_rgba(0,0,0,1)]" style="animation-delay:360ms">
+              ${escapeHtml(item.description)}
+            </p>
+          </div>
+        </div>
+      `;
+      applyStoredTextStyles(document.getElementById('tv-screen'));
+      renderFeaturedPanel();
+      const video = document.getElementById('tv-current-video');
+      if (video && storeData.respectVideoDuration) video.onended = nextSlide;
+      if (video && isPaused) video.pause();
+      startSlideTimer();
+    }
+
+    // CONTROLADORES DO SLIDESHOW
+    function startSlideTimer() {
+      clearInterval(slideTimer);
+      const slideshowItems = getSlideshowItems();
+      if (isPaused || slideshowItems.length === 0) return;
+      const item = slideshowItems[currentSlideIndex];
+      const video = document.getElementById('tv-current-video');
+      if (video && storeData.respectVideoDuration) return;
+      const timerSec = Math.max(3, Math.min(600, Number(item?.duration) || Number(document.getElementById('input-slide-timer').value) || 6));
+      slideTimer = setInterval(() => {
+        nextSlide();
+      }, timerSec * 1000);
+    }
+
+    function resetSlideTimer() {
+      saveStoreData();
+      document.getElementById('input-slide-timer').value = storeData.slideTimerSec;
+      startSlideTimer();
+    }
+
+    function nextSlide() {
+      const slideshowItems = getSlideshowItems();
+      if (slideshowItems.length === 0) return;
+      currentSlideIndex = (currentSlideIndex + 1) % slideshowItems.length;
+      renderCurrentSlide();
+    }
+
+    function prevSlide() {
+      const slideshowItems = getSlideshowItems();
+      if (slideshowItems.length === 0) return;
+      currentSlideIndex = (currentSlideIndex - 1 + slideshowItems.length) % slideshowItems.length;
+      renderCurrentSlide();
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      const btn = document.getElementById('btn-toggle-pause');
+      const video = document.getElementById('tv-current-video');
+      if (isPaused) {
+        clearInterval(slideTimer);
+        if (video) video.pause();
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> Continuar`;
+        btn.className = "ml-2 p-2 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded border border-green-500/40 transition";
+      } else {
+        btn.innerHTML = `<i class="fa-solid fa-pause"></i> Pausar`;
+        btn.className = "ml-2 p-2 bg-brandGold/20 text-brandGold hover:bg-brandGold/30 rounded border border-brandGold/40 transition";
+        if (video) video.play().catch(() => {
+          document.getElementById('save-status').innerText = 'O navegador bloqueou a reprodução do vídeo';
+          document.getElementById('save-status').className = 'hidden sm:inline text-[10px] text-amber-300';
+        });
+        startSlideTimer();
+      }
+    }
+
+    function updateVideoDurationMode() {
+      storeData.respectVideoDuration = document.getElementById('input-video-natural').checked;
+      saveStoreData();
+      renderCurrentSlide();
+    }
+
+    // RENDERIZA EDITOR DE ITENS NA COLUNA ESQUERDA
+    function renderItemsEditor() {
+      const container = document.getElementById('items-editor-container');
+      renderCategoryManager();
+      container.innerHTML = storeData.categories.map((category, categoryIndex) => {
+        const categoryItems = storeData.items
+          .map((item, index) => ({ item, index }))
+          .filter(({ item }) => item.category === category);
+        return `<section class="rounded-lg border border-gray-800 bg-[#101014] p-3">
+          <div class="mb-3 flex items-center justify-between gap-2 border-b border-gray-800 pb-2">
+            <h3 class="text-xs font-bold uppercase text-brandGold">${escapeHtml(category)} <span class="text-gray-500">(${categoryItems.length})</span></h3>
+            <button type="button" onclick="addNewItemByCategory(${categoryIndex})" class="shrink-0 rounded bg-green-700 px-3 py-1.5 text-[10px] font-bold text-white hover:bg-green-600">+ Adicionar Item</button>
+          </div>
+          <div class="space-y-3">${categoryItems.map(({ item, index }) => renderItemCard(item, index)).join('') || '<p class="py-2 text-[10px] text-gray-500">Ainda não há produtos nesta categoria.</p>'}</div>
+        </section>`;
+      }).join('') || '<p class="text-xs text-gray-500">Cadastre uma categoria para começar.</p>';
+      renderFeaturedEditor();
+    }
+
+    function renderItemCard(item, index) {
+      const badgePresetIndex = DEFAULT_BADGES.findIndex(badge => badge.name.toLocaleLowerCase() === String(item.badge).toLocaleLowerCase());
+      const customBadge = storeData.customBadges.find(badge => badge.id === item.badgeId);
+      const hasLegacyBadge = badgePresetIndex < 0 && !customBadge;
+      const badgeOptions = [
+        ...DEFAULT_BADGES.map((badge, presetIndex) => `<option value="preset:${presetIndex}" ${badgePresetIndex === presetIndex ? 'selected' : ''}>${escapeHtml(badge.name)}</option>`),
+        ...storeData.customBadges.map(badge => `<option value="custom:${escapeHtml(badge.id)}" ${item.badgeId === badge.id ? 'selected' : ''}>${escapeHtml(badge.name)}</option>`),
+        ...(hasLegacyBadge && item.badge ? [`<option value="legacy" selected>${escapeHtml(item.badge)}</option>`] : []),
+        '<option value="create">+ Criar/Digitar novo selo…</option>'
+      ].join('');
+      return `<div data-item-index="${index}" class="rounded-lg border border-gray-800 bg-black p-3 space-y-3 relative group">
+          <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+            <span class="text-xs font-bold text-brandGold">#${index + 1} - ${escapeHtml(item.category || 'ITEM')}</span>
+            <button onclick="removeItem(${index})" class="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded bg-red-950/40 transition">
+              <i class="fa-solid fa-trash"></i> Excluir
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-gray-400">Categoria</label>
+              <select data-item-field="category" onchange="updateItemField(${index}, 'category', this.value)" aria-label="Categoria do produto ${index + 1}" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white">
+                ${[...new Set([item.category, ...storeData.categories].filter(Boolean))].map(category => `<option value="${escapeHtml(category)}" ${category === item.category ? 'selected' : ''}>${escapeHtml(category)}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-400">Selo / Badge</label>
+              <select data-item-field="badge" onchange="updateItemBadge(${index},this.value,this)" aria-label="Selo do produto ${index + 1}" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white">${badgeOptions}</select>
+            </div>
+          </div>
+          <div class="custom-badge-creator hidden rounded border border-gray-800 bg-[#111114] p-2">
+            <label class="block text-[10px] text-gray-400">Nome e cor do novo selo</label>
+            <div class="mt-1 flex gap-2">
+              <input type="text" data-new-badge-name placeholder="Nome do selo" class="min-w-0 flex-1 rounded border border-gray-700 bg-[#181818] px-2 py-1 text-xs text-white">
+              <input type="color" data-new-badge-color value="#E5A823" aria-label="Cor do novo selo" class="h-7 w-9 cursor-pointer rounded bg-[#181818]">
+              <button type="button" onclick="createCustomBadgeForItem(${index})" class="rounded bg-gray-800 px-2 py-1 text-[10px] hover:bg-gray-700">Criar selo</button>
+            </div>
+          </div>
+
+          <label class="flex items-center gap-2 rounded border border-brandGold/20 bg-brandGold/5 p-2 text-[10px] text-gray-200">
+            <input type="checkbox" data-item-field="isPromotional" ${item.isPromotional ? 'checked' : ''} onchange="updateItemField(${index},'isPromotional',this.checked)" class="accent-yellow-500">
+            Incluir em Promoções e Destaques
+          </label>
+
+          <div>
+            <label class="block text-[10px] text-gray-400">Título do Prato / Produto</label>
+            <input type="text" data-item-field="title" value="${escapeHtml(item.title)}" oninput="updateItemField(${index}, 'title', this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white font-bold">
+          </div>
+
+          <div>
+            <label class="block text-[10px] text-gray-400">Descrição Curta</label>
+            <input type="text" data-item-field="description" value="${escapeHtml(item.description)}" oninput="updateItemField(${index}, 'description', this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[10px] text-gray-400">Preço Anterior (De)</label>
+              <input type="text" data-item-field="oldPrice" value="${escapeHtml(item.oldPrice)}" oninput="updateItemField(${index}, 'oldPrice', this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-gray-300">
+            </div>
+            <div>
+              <label class="block text-[10px] text-gray-400">Preço Atual (Por)</label>
+              <input type="text" data-item-field="price" value="${escapeHtml(item.price)}" oninput="updateItemField(${index}, 'price', this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-brandGold font-bold">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] text-gray-400">Duração desta tela (segundos)</label>
+            <input type="number" data-item-field="duration" min="3" max="600" value="${Math.max(3, Number(item.duration) || 6)}" oninput="updateItemField(${index}, 'duration', this.value)" class="w-full bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white">
+          </div>
+
+          <div>
+            <label class="block text-[10px] text-gray-400 mb-1">Imagem ou vídeo do produto (URL ou arquivo)</label>
+            <div class="flex gap-2">
+              <input type="text" data-item-field="image" value="${escapeHtml(item.image)}" oninput="updateItemField(${index}, 'image', this.value)" placeholder="URL da imagem/vídeo" class="flex-1 bg-[#181818] border border-gray-700 rounded px-2 py-1 text-xs text-white">
+              <label class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white text-xs font-bold rounded cursor-pointer transition flex items-center gap-1">
+                <i class="fa-solid fa-upload"></i>
+                <input type="file" accept="image/*,video/*" class="hidden" onchange="uploadItemImage(${index}, event)">
+              </label>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function updateItemBadge(index, value, select) {
+      const item = storeData.items[index];
+      if (!item) return;
+      if (value === 'create') {
+        const creator = select.closest('[data-item-index]')?.querySelector('.custom-badge-creator');
+        creator?.classList.remove('hidden');
+        creator?.querySelector('[data-new-badge-name]')?.focus();
+        return;
+      }
+      if (value.startsWith('preset:')) {
+        const badge = DEFAULT_BADGES[Number(value.slice(7))];
+        if (!badge) return;
+        item.badge = badge.name;
+        item.badgeColor = badge.color;
+        item.badgeId = '';
+      } else if (value.startsWith('custom:')) {
+        const badge = storeData.customBadges.find(entry => entry.id === value.slice(7));
+        if (!badge) return;
+        item.badge = badge.name;
+        item.badgeColor = badge.color;
+        item.badgeId = badge.id;
+      } else if (value === 'legacy') {
+        item.badge = normalizeBadgeName(item.badge);
+        item.badgeId = '';
+      }
+      renderItemsEditor();
+      renderCurrentSlide();
+      renderFeaturedPanel();
+      renderFeaturedEditor();
+      saveStoreData();
+    }
+
+    function createCustomBadgeForItem(index) {
+      const card = document.querySelector(`[data-item-index="${index}"]`);
+      const nameInput = card?.querySelector('[data-new-badge-name]');
+      const colorInput = card?.querySelector('[data-new-badge-color]');
+      const name = nameInput?.value.trim() || '';
+      if (!name) {
+        nameInput?.focus();
+        return;
+      }
+      const normalized = normalizeLabel(name);
+      const presetIndex = DEFAULT_BADGES.findIndex(badge => normalizeLabel(badge.name) === normalized);
+      if (presetIndex >= 0) {
+        updateItemBadge(index, `preset:${presetIndex}`);
+        return;
+      }
+      let badge = storeData.customBadges.find(entry => normalizeLabel(entry.name) === normalized);
+      if (!badge) {
+        badge = {
+          id: `badge-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          name,
+          color: colorInput?.value || DEFAULT_BADGES[0].color
+        };
+        storeData.customBadges.push(badge);
+      }
+      updateItemBadge(index, `custom:${badge.id}`);
+    }
+
+    function renderFeaturedEditor() {
+      const container = document.getElementById('featured-editor-container');
+      if (!container) return;
+      const filter = document.getElementById('featured-filter')?.value || 'promotional';
+      const categoryFilter = document.getElementById('featured-category-filter');
+      const selectedCategory = categoryFilter?.value || 'all';
+      if (categoryFilter) {
+        const previous = selectedCategory;
+        categoryFilter.innerHTML = '<option value="all">Todas</option>' + storeData.categories.map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+        categoryFilter.value = storeData.categories.includes(previous) ? previous : 'all';
+      }
+      const items = storeData.items
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => (filter === 'all' || isPromotionalItem(item)) && (selectedCategory === 'all' || item.category === selectedCategory));
+      container.innerHTML = items.map(({ item, index }) => {
+        const media = safeMediaUrl(item.image);
+        const isVideo = item.mediaType === 'video' || /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(media);
+        const mediaPreview = media
+          ? isVideo
+            ? `<video src="${escapeHtml(media)}" muted playsinline class="h-full w-full object-cover"></video>`
+            : `<img src="${escapeHtml(media)}" alt="${escapeHtml(item.title)}" class="h-full w-full object-cover">`
+          : '<span class="flex h-full items-center justify-center text-[9px] text-gray-500">Sem mídia</span>';
+        return `<article class="flex flex-wrap items-center gap-3 rounded-lg border border-gray-800 bg-black p-3">
+        <div class="h-16 w-20 shrink-0 overflow-hidden rounded border border-gray-700 bg-[#181818]">
+          ${mediaPreview}
+        </div>
+        <div class="min-w-0 flex-1">
+          <input type="text" value="${escapeHtml(item.title)}" aria-label="Título do destaque" onchange="updateItemField(${index},'title',this.value)" class="w-full bg-transparent text-xs font-bold text-white focus:outline-none">
+          <div class="mt-1 flex items-center gap-2">
+            <span class="text-[10px] text-brandGold">${escapeHtml(item.price)}</span>
+            <span class="truncate text-[10px] text-gray-500">${escapeHtml(item.category)}</span>
+          </div>
+        </div>
+        <label class="flex items-center gap-2 text-[10px] ${isPromotionalItem(item) ? 'text-brandGold' : 'text-gray-400'}">
+          <input type="checkbox" ${isPromotionalItem(item) ? 'checked' : ''} onchange="updateItemField(${index},'isPromotional',this.checked)" class="accent-yellow-500">
+          Promocional
+        </label>
+        <button type="button" onclick="switchTab('items');requestAnimationFrame(()=>document.querySelector('[data-item-index=&quot;${index}&quot;]')?.scrollIntoView({behavior:'smooth',block:'center'}))" class="rounded bg-gray-800 px-2 py-1 text-[10px] text-white hover:bg-gray-700">Editar item</button>
+      </article>`;
+      }).join('') || '<p class="rounded border border-gray-800 bg-black p-4 text-xs text-gray-500">Nenhum produto corresponde a este filtro. Cadastre um item em Cardápio ou adicione um item promocional.</p>';
+    }
+
+    function addNewItemByCategory(categoryIndex) {
+      const category = storeData.categories[categoryIndex];
+      if (!category) return;
+      switchTab('items');
+      addNewItem(category);
+    }
+
+    function updateItemField(index, field, value) {
+      const item = storeData.items[index];
+      if (!item) return;
+      const activeSlideId = getSlideshowItems()[currentSlideIndex]?.id;
+      item[field] = field === 'duration'
+        ? Math.max(3, Math.min(600, Number(value) || 6))
+        : field === 'isPromotional'
+          ? Boolean(value)
+          : value;
+      if (field === 'category' && value.trim() && !storeData.categories.includes(value.trim())) {
+        storeData.categories.push(value.trim());
+      }
+      if (field === 'category') {
+        renderItemsEditor();
+      }
+      if (field === 'isPromotional' || activeSlideId === item.id) {
+        renderCurrentSlide();
+      }
+      renderFeaturedPanel();
+      renderFeaturedEditor();
+      saveStoreData();
+    }
+
+    function uploadItemImage(index, event) {
+      const file = event.target.files[0];
+      if (file) {
+        if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+          alert('Selecione uma imagem ou vídeo.');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          storeData.items[index].image = e.target.result;
+          storeData.items[index].mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+          renderItemsEditor();
+          renderCurrentSlide();
+          renderFeaturedEditor();
+          saveStoreData();
+        };
+        reader.onerror = () => alert('Não foi possível ler o arquivo selecionado.');
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function addNewItem(category = DEFAULT_CATEGORIES[0], promotional = false) {
+      const itemId = Date.now() + Math.floor(Math.random() * 1000);
+      const itemCategory = normalizeCategoryName(category) || DEFAULT_CATEGORIES[0];
+      if (!storeData.categories.some(existing => normalizeLabel(existing) === normalizeLabel(itemCategory))) {
+        storeData.categories.push(itemCategory);
+      }
+      storeData.items.push({
+        id: itemId,
+        category: itemCategory,
+        title: "Nome do Prato Especial",
+        description: "Descrição saborosa dos ingredientes e preparo.",
+        oldPrice: "R$ 00,00",
+        price: "R$ 00,00",
+        badge: promotional ? DEFAULT_BADGES[5].name : DEFAULT_BADGES[1].name,
+        badgeColor: promotional ? DEFAULT_BADGES[5].color : DEFAULT_BADGES[1].color,
+        badgeId: '',
+        isPromotional: promotional,
+        duration: storeData.slideTimerSec,
+        mediaType: "image",
+        image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+      });
+      renderItemsEditor();
+      const slideIndex = getSlideshowItems().findIndex(item => item.id === itemId);
+      if (slideIndex >= 0) currentSlideIndex = slideIndex;
+      renderCurrentSlide();
+      renderFeaturedEditor();
+      saveStoreData();
+    }
+
+    function removeItem(index) {
+      if (confirm('Tem certeza que deseja remover este item da apresentação?')) {
+        const activeSlideId = getSlideshowItems()[currentSlideIndex]?.id;
+        storeData.items.splice(index, 1);
+        renderItemsEditor();
+        const slideshowItems = getSlideshowItems();
+        const activeSlideIndex = slideshowItems.findIndex(item => item.id === activeSlideId);
+        if (activeSlideIndex >= 0) {
+          currentSlideIndex = activeSlideIndex;
+        } else if (currentSlideIndex >= slideshowItems.length) {
+          currentSlideIndex = Math.max(0, slideshowItems.length - 1);
+        }
+        renderCurrentSlide();
+        renderItemsEditor();
+        renderFeaturedEditor();
+        saveStoreData();
+      }
+    }
+
+    // MODO TV TELA CHEIA (FULLSCREEN)
+    function toggleTvFullScreen() {
+      const tvScreen = document.getElementById('tv-screen');
+      if (!document.fullscreenElement) {
+        const request = tvScreen.requestFullscreen || tvScreen.webkitRequestFullscreen;
+        if (!request) {
+          document.getElementById('save-status').innerText = 'Tela cheia não é compatível com este navegador';
+          document.getElementById('save-status').className = 'hidden sm:inline text-[10px] text-amber-300';
+          return;
+        }
+        Promise.resolve(request.call(tvScreen)).catch(() => {
+          document.getElementById('save-status').innerText = 'Não foi possível ativar a tela cheia';
+          document.getElementById('save-status').className = 'hidden sm:inline text-[10px] text-red-400';
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {
+            document.getElementById('save-status').innerText = 'Não foi possível sair da tela cheia';
+            document.getElementById('save-status').className = 'hidden sm:inline text-[10px] text-red-400';
+          });
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
